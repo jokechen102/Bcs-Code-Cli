@@ -7,7 +7,7 @@ import { Process } from "@/util"
 
 export const PrCommand = cmd({
   command: "pr <number>",
-  describe: "fetch and checkout a GitHub PR branch, then run mimocode",
+  describe: "fetch and checkout a GitHub PR branch, then run BCS Code",
   builder: (yargs) =>
     yargs.positional("number", {
       type: "number",
