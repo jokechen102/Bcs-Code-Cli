@@ -18,7 +18,7 @@
 
 BCS Code is an internal trial distribution based on Xiaomi MiMoCode, which is itself built from OpenCode. The internal distribution keeps upstream capabilities while applying BCS-specific branding and packaging for controlled evaluation.
 
-MiMo Auto is built in as a free-for-limited-time channel, so you can start with zero configuration. BCS Code also supports connecting to any mainstream LLM provider API.
+BCS Auto is built in as a free-for-limited-time channel, so you can start with zero configuration. BCS Code also supports connecting to any mainstream LLM provider API.
 
 ---
 
@@ -38,8 +38,8 @@ npm install -g @bcs-code/cli
 ```
 
 Run `bcs-code` after installation. The first launch guides you through configuration automatically. Supported options:
-- **MiMo Auto (free for a limited time)** — anonymous channel, zero configuration
-- **Xiaomi MiMo Platform** — OAuth login
+- **BCS Auto (free for a limited time)** — anonymous channel, zero configuration
+- **BCS Model Platform** — OAuth login
 - **Import from Claude Code** — migrate existing authentication in one step
 - **Custom Provider** — add any OpenAI-compatible API in the TUI
 
@@ -92,7 +92,7 @@ Compose mode provides a structured workflow for specs-driven development. It inc
 
 ### Voice Input
 
-Real-time streaming voice input powered by TenVAD and MiMo ASR. Activate with `/voice`, then speak — audio is segmented by pauses and transcribed incrementally into the input. Available for MiMo logged-in users.
+Real-time streaming voice input powered by TenVAD and BCS Voice. Activate with `/voice`, then speak — audio is segmented by pauses and transcribed incrementally into the input. Available for BCS logged-in users.
 
 ### Dream & Distill
 

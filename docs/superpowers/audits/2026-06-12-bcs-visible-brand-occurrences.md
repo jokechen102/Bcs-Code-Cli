@@ -10,16 +10,21 @@ Context: repo root `/Users/joke/Documents/repo/Bcs-Code-Cli/.worktrees/codex-bcs
 rg -n --glob '!node_modules' --glob '!dist' --glob '!bun.lock' --glob '!*.map' "MiMo|Mimo|mimo|MIMOCODE|mimocode|OpenCode|opencode|OPENCODE|@mimo-ai" README.md docs packages/opencode/src packages/opencode/deploy/windows script
 ```
 
+## Completed Replacements
+
+| File | Original | Replacement | Commit |
+| --- | --- | --- | --- |
+| `README.md` | `MiMo Auto` | `BCS Auto` | pending |
+| `README.md` | `Xiaomi MiMo Platform` | `BCS Model Platform` | pending |
+| `README.md` | `MiMo ASR` | `BCS Voice` | pending |
+| `README.md` | `MiMo logged-in users` | `BCS logged-in users` | pending |
+
 ## Replace
 
 These are user-visible surfaces to patch in this implementation.
 
 | File | Match | Replacement | Reason |
 | --- | --- | --- | --- |
-| `README.md` | `MiMo Auto` | `BCS Auto` | Product-facing feature copy |
-| `README.md` | `Xiaomi MiMo Platform` | `BCS Model Platform` | Product-facing provider option |
-| `README.md` | `MiMo ASR` | `BCS Voice` | Product-facing feature copy |
-| `README.md` | `MiMo logged-in users` | `BCS logged-in users` | Product-facing voice feature copy |
 | `packages/opencode/src/cli/cmd/tui/feature-plugins/sidebar/footer.tsx` | `MiMo` | `BCS` | TUI status display |
 | `packages/opencode/src/cli/cmd/tui/context/local.tsx` | `MiMo Auto（MiMo-V2.5 限免中）` | `BCS Auto` | Model display label only |
 | `packages/opencode/src/cli/cmd/tui/i18n/en.ts` | `Please log in to MiMo first` | `Please log in to BCS first` | TUI voice auth error |
@@ -78,3 +83,13 @@ These need a local decision during implementation.
 | `packages/opencode/src/cli/cmd/tui/i18n/*` | `tui.command.opencode.status.title` | Key name should stay; confirm whether surrounding visible command/status text needs BCS wording |
 | `packages/opencode/src/config/config.ts` | `Server configuration for mimo serve and web commands` | Decide whether generated schema/help descriptions should use BCS command wording or preserve upstream command references |
 | `packages/opencode/src/config/config.ts` | `every mimocode agent (build/explore/subagents)` | Decide whether generated schema/help descriptions should use BCS product wording or preserve compatibility terminology |
+
+## Intentional Task 2 Scan Matches
+
+The Task 2 verification scan can still match old-brand strings inside this audit because this file records originals and future cleanup candidates.
+
+| File | Match | Reason |
+| --- | --- | --- |
+| `docs/superpowers/audits/2026-06-12-bcs-visible-brand-occurrences.md` | completed `Original` values | Historical record of replacements made in this task |
+| `docs/superpowers/audits/2026-06-12-bcs-visible-brand-occurrences.md` | remaining `Replace` rows for runtime TUI files | Outside the four-file docs-cleanup scope |
+| `docs/superpowers/plans/2026-06-12-bcs-visible-brand-cleanup.md` | historical task text and command examples | Planning/spec record outside the four-file docs-cleanup scope |
