@@ -1,22 +1,22 @@
-<h1 align="center">MiMoCode</h1>
+<h1 align="center">BCS Code</h1>
 
 <p align="center">
-  <img src="assets/readme/mimocode-banner.png" alt="MiMoCode" width="700">
+  <img src="assets/readme/bcs-code-banner.png" alt="BCS Code" width="700">
 </p>
 
-<p align="center"><strong>开源 AI 编程智能体，拥有跨会话记忆。</strong></p>
+<p align="center"><strong>面向 BCS 内部试用的 AI 编程智能体发行版。</strong></p>
 
 <p align="center">
   中文 | <a href="README.md">English</a>
 </p>
 
 <p align="center">
-  <a href="https://mimo.xiaomi.com/zh/mimocode">官网</a> | <a href="https://mimo.xiaomi.com/zh/blog/mimo-code-long-horizon">博客</a>
+  <a href="https://mimo.xiaomi.com/zh/mimocode">上游官网</a> | <a href="https://mimo.xiaomi.com/zh/blog/mimo-code-long-horizon">上游博客</a>
 </p>
 
 ---
 
-MiMoCode 是一个终端原生的 AI 编程助手。它能读写代码、执行命令、管理 Git，通过持久化记忆系统，在多次会话间保持对你项目的深度理解，并自我进化。
+BCS Code 是基于小米 MiMoCode 的内部试用发行版，而 MiMoCode 基于 OpenCode 构建。本内部发行版保留上游核心能力，仅针对 BCS 内测做品牌和打包入口调整。
 
 内置 MiMo Auto 限时免费通道——零配置即可开始使用。也支持接入各家主流 LLM 厂商 API。
 
@@ -25,14 +25,19 @@ MiMoCode 是一个终端原生的 AI 编程助手。它能读写代码、执行�
 ## 快速开始
 
 ```bash
-# 一键安装
-curl -fsSL https://mimo.xiaomi.com/install | bash
+# 构建当前平台二进制
+cd packages/opencode
+OPENCODE_VERSION=0.1.0-bcs.1 ./script/build.ts --single
+cd ../..
 
-# 或通过 npm 安装
-npm install -g @mimo-ai/cli
+# 在 Apple Silicon macOS 安装本地二进制
+./install --binary packages/opencode/dist/bcs-code-darwin-arm64/bin/bcs-code
+
+# 规划中的内网 npm registry 安装路径
+npm install -g @bcs-code/cli
 ```
 
-首次启动自动引导配置。支持：
+安装后运行 `bcs-code`。首次启动自动引导配置。支持：
 - **MiMo Auto（限时免费）** — 匿名通道，零配置
 - **小米 MiMo 平台** — OAuth 登录
 - **从 Claude Code 导入** — 一键迁移已有认证
@@ -98,7 +103,7 @@ Compose 模式提供结构化的 specs-driven 开发流程，内置规划、执�
 
 ## 配置
 
-通过项目目录下的 `.mimocode/mimocode.json`（或全局 `~/.config/mimocode/mimocode.json`）配置。主要选项包括：
+BCS Code 当前保留上游 MiMoCode 配置路径：项目目录下的 `.mimocode/mimocode.json`，或全局 `~/.config/mimocode/mimocode.json`。主要选项包括：
 
 - Provider 和模型选择
 - Agent 权限和自定义 Agent
@@ -120,9 +125,9 @@ bun turbo typecheck      # 类型检查
 
 ---
 
-## 与 OpenCode 的关系
+## 与 Xiaomi MiMoCode 和 OpenCode 的关系
 
-MiMoCode 基于 [OpenCode](https://github.com/anomalyco/opencode) fork 构建，保留其全部核心能力（多 Provider、TUI、LSP、MCP、插件），并在此基础上构建了持久化记忆、智能上下文管理、子智能体编排、目标驱动的自主循环、Compose 工作流，以及通过 dream/distill 实现的自我进化。
+BCS Code 基于小米 MiMoCode 构建，而 MiMoCode 基于 [OpenCode](https://github.com/anomalyco/opencode) fork 构建。BCS Code 保留上游核心能力（多 Provider、TUI、LSP、MCP、插件、记忆、子智能体、Compose 工作流和 dream/distill），只调整内部试用所需的品牌和打包入口。
 
 ---
 
@@ -142,6 +147,6 @@ MiMoCode 基于 [OpenCode](https://github.com/anomalyco/opencode) fork 构建，
 
 源代码基于 [MIT 许可证](./LICENSE) 开源。
 
-使用 MiMoCode 还需遵守[使用限制](./USE_RESTRICTIONS.md)。
+使用 BCS Code 还需遵守[使用限制](./USE_RESTRICTIONS.md)。
 使用小米 MiMo 托管服务须遵守 [MiMo 服务条款](https://platform.xiaomimimo.com/docs/terms/user-agreement)。
 使用 MiMo 名称、标志和商标须遵守 MiMo 商标政策。
