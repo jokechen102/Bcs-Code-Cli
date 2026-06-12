@@ -40,6 +40,7 @@ import { PluginCommand } from "./cli/cmd/plug"
 import { Heap } from "./cli/heap"
 import { drizzle } from "drizzle-orm/bun-sqlite"
 import { ensureProcessMetadata } from "./util/mimo-process"
+import { Brand } from "./brand"
 
 const processMetadata = ensureProcessMetadata("main")
 
@@ -59,7 +60,7 @@ const args = hideBin(process.argv)
 
 function show(out: string) {
   const text = out.trimStart()
-  if (!text.startsWith("mimo ")) {
+  if (!text.startsWith(`${Brand.cliName} `)) {
     process.stderr.write(UI.logo() + EOL + EOL)
     process.stderr.write(text)
     return
@@ -69,7 +70,7 @@ function show(out: string) {
 
 const cli = yargs(args)
   .parserConfiguration({ "populate--": true })
-  .scriptName("mimo")
+  .scriptName(Brand.cliName)
   .wrap(100)
   .help("help", "show help")
   .alias("help", "h")
@@ -109,7 +110,7 @@ const cli = yargs(args)
     process.env.MIMOCODE = "1"
     process.env.MIMOCODE_PID = String(process.pid)
 
-    Log.Default.info("mimocode", {
+    Log.Default.info(Brand.userAgent, {
       version: InstallationVersion,
       args: process.argv.slice(2),
       process_role: processMetadata.processRole,

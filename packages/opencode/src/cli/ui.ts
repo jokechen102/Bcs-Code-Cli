@@ -4,10 +4,8 @@ import { NamedError } from "@mimo-ai/shared/util/error"
 import { logo as glyphs } from "./logo"
 
 const wordmark = [
-  `⠀                                       `,
-  `█▀▄▀█ █ █▄ ▄█ █▀▀█ █▀▀ █▀▀█ █▀▀▄ █▀▀▀`,
-  `█ ▀ █ █ █ ▀ █ █  █ █   █  █ █  █ █▀▀ `,
-  `▀   ▀ ▀ ▀   ▀ ▀▀▀▀ ▀▀▀ ▀▀▀▀ ▀▀▀  ▀▀▀▀`,
+  `BCS CODE`,
+  `Internal AI coding assistant`,
 ]
 
 export const CancelledError = NamedError.create("UICancelledError", z.void())
