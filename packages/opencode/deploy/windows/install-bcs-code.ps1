@@ -219,6 +219,10 @@ function Write-Launchers($WezTermExe, $BcsCodeExe, $Settings) {
   $fullEnvKey = if ($Settings.fullApiKeyEnv) { $Settings.fullApiKeyEnv } else { "BCS_CODE_FULL_API_KEY" }
   $smallEnvKey = if ($Settings.smallApiKeyEnv) { $Settings.smallApiKeyEnv } else { "BCS_CODE_SMALL_API_KEY" }
 
+  function ConvertTo-PowerShellLiteral($Value) {
+    return "'" + ([string]$Value).Replace("'", "''") + "'"
+  }
+
   @"
 local wezterm = require 'wezterm'
 
@@ -237,16 +241,16 @@ return {
 }
 "@ | Set-Content $wezConfig -Encoding UTF8
 
-  @"
-`$ErrorActionPreference = "Stop"
-`$env:MIMOCODE_DISABLE_MODELS_FETCH = "1"
-`$fullApiKey = [Environment]::GetEnvironmentVariable("$fullEnvKey", "User")
-if (`$fullApiKey) { [Environment]::SetEnvironmentVariable("$fullEnvKey", `$fullApiKey, "Process") }
-`$smallApiKey = [Environment]::GetEnvironmentVariable("$smallEnvKey", "User")
-if (`$smallApiKey) { [Environment]::SetEnvironmentVariable("$smallEnvKey", `$smallApiKey, "Process") }
-`$env:Path = "$((Split-Path $BcsCodeExe -Parent).Replace("`", "``"));$((Split-Path $WezTermExe -Parent).Replace("`", "``"));`$env:Path"
-& "$($WezTermExe.Replace("`", "``"))" --config-file "$($wezConfig.Replace("`", "``"))" start --cwd "$env:USERPROFILE" -- "$($BcsCodeExe.Replace("`", "``"))"
-"@ | Set-Content $launcher -Encoding UTF8
+  @(
+    '$ErrorActionPreference = "Stop"'
+    '$env:MIMOCODE_DISABLE_MODELS_FETCH = "1"'
+    "`$fullApiKey = [Environment]::GetEnvironmentVariable($(ConvertTo-PowerShellLiteral $fullEnvKey), 'User')"
+    "if (`$fullApiKey) { [Environment]::SetEnvironmentVariable($(ConvertTo-PowerShellLiteral $fullEnvKey), `$fullApiKey, 'Process') }"
+    "`$smallApiKey = [Environment]::GetEnvironmentVariable($(ConvertTo-PowerShellLiteral $smallEnvKey), 'User')"
+    "if (`$smallApiKey) { [Environment]::SetEnvironmentVariable($(ConvertTo-PowerShellLiteral $smallEnvKey), `$smallApiKey, 'Process') }"
+    "`$env:Path = $(ConvertTo-PowerShellLiteral (Split-Path $BcsCodeExe -Parent)) + ';' + $(ConvertTo-PowerShellLiteral (Split-Path $WezTermExe -Parent)) + ';' + `$env:Path"
+    "& $(ConvertTo-PowerShellLiteral $WezTermExe) --config-file $(ConvertTo-PowerShellLiteral $wezConfig) start --cwd `$env:USERPROFILE -- $(ConvertTo-PowerShellLiteral $BcsCodeExe)"
+  ) | Set-Content $launcher -Encoding UTF8
 
   $cmd = Join-Path $InstallRoot "BCS Code.cmd"
   @"
