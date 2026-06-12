@@ -18,24 +18,21 @@ rg -n --glob '!node_modules' --glob '!dist' --glob '!bun.lock' --glob '!*.map' "
 | `README.md` | `Xiaomi MiMo Platform` | `BCS Model Platform` | `0b160be` |
 | `README.md` | `MiMo ASR` | `BCS Voice` | `0b160be` |
 | `README.md` | `MiMo logged-in users` | `BCS logged-in users` | `0b160be` |
+| `packages/opencode/src/cli/cmd/tui/feature-plugins/sidebar/footer.tsx` | `MiMo` | `BCS` | `44cbfaa` |
+| `packages/opencode/src/cli/cmd/tui/context/local.tsx` | `MiMo Auto（MiMo-V2.5 限免中）` | `BCS Auto` | `44cbfaa` |
+| `packages/opencode/src/cli/cmd/tui/i18n/en.ts` | `Please log in to MiMo first` | `Please log in to BCS first` | `44cbfaa` |
+| `packages/opencode/src/cli/cmd/tui/i18n/en.ts` | `MiMo Auto (free)` | `BCS Auto` | `44cbfaa` |
+| `packages/opencode/src/cli/cmd/tui/i18n/en.ts` | `MiMo browser login` | `BCS browser login` | `44cbfaa` |
+| `packages/opencode/src/cli/cmd/tui/i18n/zh.ts` | `请先登录 MiMo 账号` | `请先登录 BCS 账号` | `44cbfaa` |
+| `packages/opencode/src/cli/cmd/tui/i18n/zh.ts` | `MiMo Auto (free)` | `BCS Auto` | `44cbfaa` |
+| `packages/opencode/src/cli/cmd/tui/i18n/zh.ts` | `MiMo 浏览器登录` | `BCS 浏览器登录` | `44cbfaa` |
+| `packages/opencode/src/cli/cmd/tui/i18n/zh.ts` | `MiMo 登录` | `BCS 登录` | `44cbfaa` |
+| `packages/opencode/src/cli/cmd/tui/component/dialog-provider.tsx` | `e.g. mimorouter` | `e.g. bcs-router` | `44cbfaa` |
+| `packages/opencode/src/cli/cmd/tui/component/dialog-provider.tsx` | `e.g. MiMo Router` | `e.g. BCS Router` | `44cbfaa` |
 
 ## Replace
 
-These are user-visible surfaces to patch in this implementation.
-
-| File | Match | Replacement | Reason |
-| --- | --- | --- | --- |
-| `packages/opencode/src/cli/cmd/tui/feature-plugins/sidebar/footer.tsx` | `MiMo` | `BCS` | TUI status display |
-| `packages/opencode/src/cli/cmd/tui/context/local.tsx` | `MiMo Auto（MiMo-V2.5 限免中）` | `BCS Auto` | Model display label only |
-| `packages/opencode/src/cli/cmd/tui/i18n/en.ts` | `Please log in to MiMo first` | `Please log in to BCS first` | TUI voice auth error |
-| `packages/opencode/src/cli/cmd/tui/i18n/en.ts` | `MiMo Auto (free)` | `BCS Auto` | TUI free-channel display label |
-| `packages/opencode/src/cli/cmd/tui/i18n/en.ts` | `MiMo browser login` | `BCS browser login` | TUI provider usage copy |
-| `packages/opencode/src/cli/cmd/tui/i18n/zh.ts` | `请先登录 MiMo 账号` | `请先登录 BCS 账号` | TUI voice auth error |
-| `packages/opencode/src/cli/cmd/tui/i18n/zh.ts` | `MiMo Auto (free)` | `BCS Auto` | TUI free-channel display label |
-| `packages/opencode/src/cli/cmd/tui/i18n/zh.ts` | `MiMo 浏览器登录` | `BCS 浏览器登录` | TUI provider usage copy |
-| `packages/opencode/src/cli/cmd/tui/i18n/zh.ts` | `MiMo 登录` | `BCS 登录` | TUI login dialog title |
-| `packages/opencode/src/cli/cmd/tui/component/dialog-provider.tsx` | `e.g. mimorouter` | `e.g. bcs-router` | Custom provider wizard placeholder |
-| `packages/opencode/src/cli/cmd/tui/component/dialog-provider.tsx` | `e.g. MiMo Router` | `e.g. BCS Router` | Custom provider wizard placeholder |
+No pending high-confidence TUI display-label replacements remain after `44cbfaa`. Ambiguous or policy-dependent TUI surfaces remain in `Confirm`.
 
 ## Keep
 
@@ -102,5 +99,5 @@ The Task 2 verification scan can still match old-brand strings inside this audit
 | File | Match | Reason |
 | --- | --- | --- |
 | `docs/superpowers/audits/2026-06-12-bcs-visible-brand-occurrences.md` | completed `Original` values | Historical record of replacements made in this task |
-| `docs/superpowers/audits/2026-06-12-bcs-visible-brand-occurrences.md` | remaining `Replace` rows for runtime TUI files | Outside the four-file docs-cleanup scope |
+| `docs/superpowers/audits/2026-06-12-bcs-visible-brand-occurrences.md` | completed TUI `Original` values | Historical record of replacements made in `44cbfaa` |
 | `docs/superpowers/plans/2026-06-12-bcs-visible-brand-cleanup.md` | historical task text and command examples | Planning/spec record outside the four-file docs-cleanup scope |

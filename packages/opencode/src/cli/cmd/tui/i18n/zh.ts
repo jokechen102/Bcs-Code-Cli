@@ -361,7 +361,7 @@ export const dict = {
   "cli.providers.mimo_free.ready": "BCS Auto 通道已就绪",
   "cli.providers.mimo_free.failed": "BCS Auto 自检失败",
   "cli.providers.mimo_free.default_set": "默认模型已切换为 mimo/mimo-auto（1M 上下文，免费）",
-  "cli.providers.mimo_free.usage_hint": "无需登录，直接 bcs-code run 即可使用。如需付费/更高级模型，可重新选择 BCS 浏览器登录。",
+  "cli.providers.mimo_free.usage_hint": "无需登录，直接运行 bcs-code 即可使用。如需付费/更高级模型，可重新选择 BCS 浏览器登录。",
   "cli.providers.mimo_login.decrypt_retry": "解密失败，请重试 (剩余 {remaining} 次)",
   "cli.providers.mimo_login.decrypt_exhausted": "解密失败，已达最大重试次数",
   "tui.dialog.login.import_claude": "从 Claude Code 导入",
