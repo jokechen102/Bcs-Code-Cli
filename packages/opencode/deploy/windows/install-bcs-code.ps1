@@ -246,6 +246,8 @@ return {
   font_size = 12.0,
   hide_tab_bar_if_only_one_tab = true,
   window_close_confirmation = 'NeverPrompt',
+  front_end = 'Software',
+  prefer_egl = true,
   colors = {
     foreground = '#F4F4F6',
     background = '#0F1013',
@@ -263,13 +265,20 @@ return {
   } else {
     Split-Path $BcsCodeExe -Parent
   }
-  $startCommand = if ($wezTermAvailable) {
-    "& $(ConvertTo-PowerShellLiteral $WezTermExe) --config-file $(ConvertTo-PowerShellLiteral $wezConfig) start --cwd `$env:USERPROFILE -- $(ConvertTo-PowerShellLiteral $BcsCodeExe)"
+  $startCommands = if ($wezTermAvailable) {
+    @(
+      "& $(ConvertTo-PowerShellLiteral $WezTermExe) --config-file $(ConvertTo-PowerShellLiteral $wezConfig) start --cwd `$env:USERPROFILE -- $(ConvertTo-PowerShellLiteral $BcsCodeExe)"
+      "if (`$LASTEXITCODE -ne 0) {"
+      "  Write-Warning 'WezTerm failed to start. Falling back to the console launcher.'"
+      "  & $(ConvertTo-PowerShellLiteral $BcsCodeExe)"
+      "}"
+    )
   } else {
-    "& $(ConvertTo-PowerShellLiteral $BcsCodeExe)"
+    @("& $(ConvertTo-PowerShellLiteral $BcsCodeExe)")
   }
 
-  @(
+  (
+    @(
     '$ErrorActionPreference = "Stop"'
     '$env:MIMOCODE_DISABLE_MODELS_FETCH = "1"'
     "`$fullApiKey = [Environment]::GetEnvironmentVariable($(ConvertTo-PowerShellLiteral $fullEnvKey), 'User')"
@@ -277,7 +286,7 @@ return {
     "`$smallApiKey = [Environment]::GetEnvironmentVariable($(ConvertTo-PowerShellLiteral $smallEnvKey), 'User')"
     "if (`$smallApiKey) { [Environment]::SetEnvironmentVariable($(ConvertTo-PowerShellLiteral $smallEnvKey), `$smallApiKey, 'Process') }"
     "`$env:Path = $(ConvertTo-PowerShellLiteral $pathPrefix) + ';' + `$env:Path"
-    $startCommand
+    ) + $startCommands
   ) | Set-Content $launcher -Encoding UTF8
 
   $cmd = Join-Path $InstallRoot "BCS Code.cmd"

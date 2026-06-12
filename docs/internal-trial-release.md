@@ -47,7 +47,7 @@ BCS_CODE_FULL_BASE_URL=http://100.89.126.33:8008/v1 \
 BCS_CODE_MODEL=dsv4 \
 BCS_CODE_SMALL_BASE_URL=http://100.115.100.130:30279/8a620da96ee846738ddc72414be2c712/v1 \
 BCS_CODE_SMALL_MODEL=Qwen-3.6-27B \
-OPENCODE_VERSION=0.1.0-bcs.2 \
+OPENCODE_VERSION=0.1.0-bcs.3 \
   ./script/package-windows-internal.ts
 ```
 
@@ -59,7 +59,7 @@ The generated zip is written under `dist/internal/`. It bundles:
 - `install-bcs-code.ps1`
 - `config/install-settings.json`
 
-End users unzip the package and run `install-bcs-code.cmd`. The installer attempts to install a private embedded WezTerm under `%LOCALAPPDATA%\Programs\BCS Code\wezterm`, installs BCS Code, writes the default internal model config, disables public model-list fetching, updates the user PATH for `bcs-code`, and creates launch shortcuts. Existing user WezTerm installs and configs are not modified. If WezTerm installation fails, the installer warns and continues with a direct BCS Code console launcher.
+End users unzip the package and run `install-bcs-code.cmd`. The installer attempts to install a private embedded WezTerm under `%LOCALAPPDATA%\Programs\BCS Code\wezterm`, installs BCS Code, writes the default internal model config, disables public model-list fetching, updates the user PATH for `bcs-code`, and creates launch shortcuts. Existing user WezTerm installs and configs are not modified. The launcher forces WezTerm software rendering for VDI/cloud desktops. If WezTerm installation fails or WezTerm cannot create a window, the installer/launcher warns and continues with a direct BCS Code console launcher.
 
 The default config uses two OpenAI-compatible providers: `bcs-full/dsv4` for the main model and `bcs-lite/Qwen-3.6-27B` for the small model. If `BCS_CODE_SMALL_API_KEY` is omitted at package time, the Windows installer prompts once and stores it in the user's environment.
 

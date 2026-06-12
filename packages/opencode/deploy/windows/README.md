@@ -13,7 +13,8 @@ The generated package installs:
 - Global BCS Code provider config under `%USERPROFILE%\.config\mimocode\mimocode.json`.
 - User environment variable `MIMOCODE_DISABLE_MODELS_FETCH=1`.
 - Desktop and Start Menu launchers that open BCS Code inside WezTerm when
-  available, or directly in a console if WezTerm installation failed.
+  available, force WezTerm software rendering for VDI/cloud desktops, and fall
+  back to a direct console launcher if WezTerm still fails to start.
 
 Build the package from the repository root:
 
@@ -22,7 +23,7 @@ BCS_CODE_FULL_BASE_URL=http://100.89.126.33:8008/v1 \
 BCS_CODE_MODEL=dsv4 \
 BCS_CODE_SMALL_BASE_URL=http://100.115.100.130:30279/8a620da96ee846738ddc72414be2c712/v1 \
 BCS_CODE_SMALL_MODEL=Qwen-3.6-27B \
-OPENCODE_VERSION=0.1.0-bcs.2 \
+OPENCODE_VERSION=0.1.0-bcs.3 \
   ./script/package-windows-internal.ts
 ```
 
