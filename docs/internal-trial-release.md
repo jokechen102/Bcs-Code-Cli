@@ -6,7 +6,7 @@ Run from the repository root:
 
 ```bash
 cd packages/opencode
-OPENCODE_VERSION=0.1.0-bcs.1 ./script/build.ts --single
+OPENCODE_VERSION=0.1.0-bcs.5 ./script/build.ts --single
 ```
 
 ## Install locally from the built binary
@@ -33,7 +33,7 @@ bcs-code --help
 Expected:
 
 ```text
-0.1.0-bcs.1
+0.1.0-bcs.5
 ```
 
 The help output should use `bcs-code` as the command name and should show the BCS Code banner.
