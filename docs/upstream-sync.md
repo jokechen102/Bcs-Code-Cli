@@ -1,38 +1,28 @@
-# Upstream Sync Runbook
+# Fork Sync Notes
 
-## Branch roles
+## Preferred path
 
-- `upstream/main`: read-only Xiaomi MiMoCode upstream.
-- `origin/dev`: internal integration branch and default branch.
-- `codex/bcs-branding`: short-lived implementation branch for BCS branding work.
-- `release/bcs-code-v0.1.0-bcs.1`: immutable release branch for this internal trial package.
+Use GitHub's **Sync fork** button on the fork repository page to keep the fork's default branch aligned with XiaomiMiMo/MiMo-Code.
 
-## First-time setup
+This is enough for normal upstream refresh work. The default branch may be `main` on GitHub even if local integration work also uses `dev`, so treat the branch shown in GitHub as the source of truth for the button flow.
 
-```bash
-git remote add upstream git@github.com:XiaomiMiMo/MiMo-Code.git
-git fetch upstream --tags
-git config rerere.enabled true
-```
+## Local follow-up for BCS branding work
 
-## Regular upstream refresh
+After GitHub finishes syncing the fork, refresh the local trial branch and replay the small BCS branding layer:
 
 ```bash
-git fetch upstream --tags
-git switch dev
-git merge --no-ff upstream/main
-bun install
-cd packages/opencode
-bun typecheck
-```
-
-Resolve conflicts by preserving upstream behavior first, then reapplying only the small BCS branding/distribution layer. Avoid mass-renaming upstream internals.
-
-## Rebase current branding work after upstream refresh
-
-```bash
+git fetch origin
 git switch codex/bcs-branding
-git rebase dev
+git rebase origin/main
+```
+
+If the fork default branch is changed to `dev`, use `origin/dev` in the rebase command instead.
+
+Resolve conflicts by preserving upstream behavior first, then reapplying only the BCS branding and internal packaging changes. Avoid mass-renaming upstream internals.
+
+## Verification after replay
+
+```bash
 cd packages/opencode
 bun test test/brand/brand.test.ts test/brand/cli-brand.test.ts
 bun typecheck
