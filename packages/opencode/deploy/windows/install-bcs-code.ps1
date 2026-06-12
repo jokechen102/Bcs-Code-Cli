@@ -232,12 +232,14 @@ function Write-Launchers($WezTermExe, $BcsCodeExe, $Settings) {
   New-Item -ItemType Directory -Path $InstallRoot -Force | Out-Null
   $fullEnvKey = if ($Settings.fullApiKeyEnv) { $Settings.fullApiKeyEnv } else { "BCS_CODE_FULL_API_KEY" }
   $smallEnvKey = if ($Settings.smallApiKeyEnv) { $Settings.smallApiKeyEnv } else { "BCS_CODE_SMALL_API_KEY" }
+  $wezTermAvailable = $WezTermExe -and (Test-Path $WezTermExe)
 
   function ConvertTo-PowerShellLiteral($Value) {
     return "'" + ([string]$Value).Replace("'", "''") + "'"
   }
 
-  @"
+  if ($wezTermAvailable) {
+    @"
 local wezterm = require 'wezterm'
 
 return {
@@ -254,6 +256,18 @@ return {
   },
 }
 "@ | Set-Content $wezConfig -Encoding UTF8
+  }
+
+  $pathPrefix = if ($wezTermAvailable) {
+    (Split-Path $BcsCodeExe -Parent) + ";" + (Split-Path $WezTermExe -Parent)
+  } else {
+    Split-Path $BcsCodeExe -Parent
+  }
+  $startCommand = if ($wezTermAvailable) {
+    "& $(ConvertTo-PowerShellLiteral $WezTermExe) --config-file $(ConvertTo-PowerShellLiteral $wezConfig) start --cwd `$env:USERPROFILE -- $(ConvertTo-PowerShellLiteral $BcsCodeExe)"
+  } else {
+    "& $(ConvertTo-PowerShellLiteral $BcsCodeExe)"
+  }
 
   @(
     '$ErrorActionPreference = "Stop"'
@@ -262,8 +276,8 @@ return {
     "if (`$fullApiKey) { [Environment]::SetEnvironmentVariable($(ConvertTo-PowerShellLiteral $fullEnvKey), `$fullApiKey, 'Process') }"
     "`$smallApiKey = [Environment]::GetEnvironmentVariable($(ConvertTo-PowerShellLiteral $smallEnvKey), 'User')"
     "if (`$smallApiKey) { [Environment]::SetEnvironmentVariable($(ConvertTo-PowerShellLiteral $smallEnvKey), `$smallApiKey, 'Process') }"
-    "`$env:Path = $(ConvertTo-PowerShellLiteral (Split-Path $BcsCodeExe -Parent)) + ';' + $(ConvertTo-PowerShellLiteral (Split-Path $WezTermExe -Parent)) + ';' + `$env:Path"
-    "& $(ConvertTo-PowerShellLiteral $WezTermExe) --config-file $(ConvertTo-PowerShellLiteral $wezConfig) start --cwd `$env:USERPROFILE -- $(ConvertTo-PowerShellLiteral $BcsCodeExe)"
+    "`$env:Path = $(ConvertTo-PowerShellLiteral $pathPrefix) + ';' + `$env:Path"
+    $startCommand
   ) | Set-Content $launcher -Encoding UTF8
 
   $cmd = Join-Path $InstallRoot "BCS Code.cmd"
@@ -282,7 +296,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%LOCALAPPDATA%\Programs
       $shortcut.TargetPath = "powershell.exe"
       $shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$launcher`""
       $shortcut.WorkingDirectory = $env:USERPROFILE
-      $shortcut.IconLocation = "$WezTermExe,0"
+      $shortcut.IconLocation = if ($wezTermAvailable) { "$WezTermExe,0" } else { "$BcsCodeExe,0" }
       $shortcut.Save()
     }
   }
@@ -294,7 +308,13 @@ if (![Environment]::Is64BitOperatingSystem) {
 
 $packageRoot = Resolve-PackageRoot
 $settings = Read-Settings $packageRoot
-$wezTermExe = Install-WezTerm $packageRoot
+$wezTermExe = ""
+try {
+  $wezTermExe = Install-WezTerm $packageRoot
+} catch {
+  Write-Warning "WezTerm installation failed: $($_.Exception.Message)"
+  Write-Warning "Continuing with BCS Code console launcher."
+}
 $bcsCodeExe = Install-BcsCode $packageRoot
 Write-BcsConfig $settings
 Write-Launchers $wezTermExe $bcsCodeExe $settings
