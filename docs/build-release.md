@@ -20,6 +20,25 @@
 
 ---
 
+## BCS 内测发布策略
+
+BCS 内测优先发布本地二进制包，不走公开 npm 和公开 GitHub Release。第一期只改可见品牌、命令名和二进制包名，保留 `.mimocode`、`MIMOCODE_*`、Provider ID、数据库名和 `@mimo-ai/*` 工作区包名，降低后续合并 XiaomiMiMo/MiMo-Code 更新的冲突面。
+
+内测构建命令：
+
+```bash
+cd packages/opencode
+OPENCODE_VERSION=0.1.0-bcs.1 ./script/build.ts --single
+```
+
+内测安装命令：
+
+```bash
+./install --binary packages/opencode/dist/bcs-code-darwin-arm64/bin/bcs-code
+```
+
+---
+
 ## 本地发布流程
 
 ### 前置条件
