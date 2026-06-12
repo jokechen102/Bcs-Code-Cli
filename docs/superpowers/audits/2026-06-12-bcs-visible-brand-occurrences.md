@@ -10,6 +10,14 @@ Context: repo root `/Users/joke/Documents/repo/Bcs-Code-Cli/.worktrees/codex-bcs
 rg -n --glob '!node_modules' --glob '!dist' --glob '!bun.lock' --glob '!*.map' "MiMo|Mimo|mimo|MIMOCODE|mimocode|OpenCode|opencode|OPENCODE|@mimo-ai" README.md docs packages/opencode/src packages/opencode/deploy/windows script
 ```
 
+Task 6 final focused scan:
+
+```bash
+rg -n --glob '!node_modules' --glob '!dist' --glob '!bun.lock' --glob '!*.map' "MiMo|Mimo|mimo|MIMOCODE|mimocode|OpenCode|opencode|OPENCODE|@mimo-ai" README.md docs packages/opencode/src packages/opencode/deploy/windows script packages/console packages/app 2>/dev/null
+```
+
+Final result: remaining matches are classified in `Keep`, resolved `Confirm`, Task 5 console/app classification, or the historical audit/plan records.
+
 ## Completed Replacements
 
 | File | Original | Replacement | Commit |
@@ -41,6 +49,22 @@ rg -n --glob '!node_modules' --glob '!dist' --glob '!bun.lock' --glob '!*.map' "
 | `packages/opencode/src/cli/cmd/pr.ts` | ``mimo import`` runtime invocation | ``bcs-code import`` | `b525a28` |
 | `packages/opencode/src/cli/cmd/pr.ts` | spawned CLI binary `mimo` | `bcs-code` | `b525a28` |
 | `packages/opencode/src/cli/bootstrap.ts` | ``Headless `mimo run` `` | ``Headless `bcs-code run` `` | `b525a28` |
+| `packages/opencode/src/cli/cmd/tui/component/dialog-status.tsx` | `Needs authentication (run: opencode mcp auth {key})` | `Needs authentication (run: bcs-code mcp auth {key})` | this commit |
+| `packages/opencode/src/cli/cmd/tui/i18n/es.ts` | `Inicia sesión en MiMo primero` | `Inicia sesión en BCS primero` | this commit |
+| `packages/opencode/src/cli/cmd/tui/i18n/fr.ts` | visible MiMo voice/login/free-channel labels | BCS voice/login/free-channel labels | this commit |
+| `packages/opencode/src/cli/cmd/tui/i18n/ja.ts` | visible MiMo voice/login/free-channel labels | BCS voice/login/free-channel labels | this commit |
+| `packages/opencode/src/cli/cmd/tui/i18n/ru.ts` | visible MiMo voice/login/free-channel labels | BCS voice/login/free-channel labels | this commit |
+| `packages/opencode/src/cli/cmd/tui/i18n/zht.ts` | `請先登入 MiMo 帳號` | `請先登入 BCS 帳號` | this commit |
+| `packages/opencode/src/mcp/index.ts` | `Run: opencode mcp auth ${key}` | `Run: bcs-code mcp auth ${key}` | this commit |
+| `packages/opencode/src/mcp/oauth-callback.ts` | OAuth callback page `OpenCode` title/body copy | `BCS Code` title/body copy | this commit |
+| `packages/opencode/src/mcp/oauth-provider.ts` | OAuth client metadata name `OpenCode` | `BCS Code` | this commit |
+| `packages/opencode/src/session/prompt/codex.txt` | agent identity `You are OpenCode` | `You are BCS Code` | this commit |
+| `packages/opencode/src/acp/agent.ts` | ACP login/display labels `opencode` / `OpenCode` | `bcs-code` / `BCS Code` labels | this commit |
+| `packages/opencode/src/plugin/codex.ts` | Codex auth callback page `OpenCode` title/body copy | `BCS Code` title/body copy | this commit |
+| `packages/opencode/src/plugin/mimo-free.ts` | provider/model display names `MiMo Auto (free)` / `MiMo Auto` | `BCS Auto` | this commit |
+| `packages/opencode/src/server/routes/**` | OpenAPI route descriptions using `OpenCode` | `BCS Code` | this commit |
+| `packages/opencode/src/command/template/initialize.txt` | generated instruction template `OpenCode` display copy | `BCS Code` | this commit |
+| `packages/opencode/src/config/managed.ts` | comment `OpenCode config` | `BCS Code config` | this commit |
 
 ## Replace
 
@@ -89,31 +113,36 @@ These are compatibility, package wiring, tests, schemas, or attribution and must
 | `packages/opencode/src/cli/cmd/providers.ts` `.well-known/opencode`, `opencode` provider ID, `https://opencode.ai/auth`, and Cloudflare docs URL | External provider discovery, provider ID, and upstream docs compatibility |
 | `packages/opencode/src/cli/cmd/providers.ts` `mimocode.json` setup guidance | Existing config file compatibility |
 | `packages/opencode/src/cli/cmd/mcp.ts` `.mimocode`, `mimocode.json`, `mimocode-debug`, and existing config-file setup guidance | Config path/file and OAuth debug client compatibility |
+| `packages/opencode/src/mcp/**` `@opencode/*`, `mimocode`, `opencode` command env handling, and `https://opencode.ai` metadata URI | Effect service tags, MCP client compatibility, command compatibility shims, and upstream OAuth client URI where no BCS URI exists; visible command/page/client-name strings are listed in Completed Replacements |
+| `packages/opencode/src/acp/README.md` `OpenCode` examples/headings and `packages/opencode/src/acp/agent.ts` implementation comments | ACP protocol documentation and internal comments, not internal trial UI labels; runtime ACP labels are listed in Completed Replacements |
 | `packages/opencode/src/cli/cmd/agent.ts` `.mimocode` | Existing project config directory compatibility |
 | `packages/opencode/src/cli/cmd/plug.ts` `mimocode` file-kind argument | Plugin config file compatibility |
 | `packages/opencode/src/cli/cmd/uninstall.ts` `.mimocode`, `# mimocode`, and unpublished package-manager comments | Backward-compatible cleanup of legacy install paths and comments |
 | `packages/opencode/src/cli/cmd/run-completion.ts` and `packages/opencode/src/cli/cmd/upgrade.ts` `packages/opencode` paths / `OPENCODE_VERSION` | Repository/package path and release tooling compatibility |
 | `packages/opencode/src/tool/websearch/mimo.ts` `api.xiaomimimo.com` and platform URLs | Xiaomi-hosted web search provider endpoint |
 | `packages/opencode/src/tool/**` `mimo-v2.5-pro` comments/examples | Provider behavior notes and model examples |
+| `packages/opencode/src/agent/prompt/**` `.mimocode`, `mimocode.db`, `MIMOCODE_DB`, `.opencode`, and historical product names inside memory prompts | Agent internal prompt instructions that describe existing storage, compatibility, and adjacent tool ecosystems rather than BCS product display labels |
+| `packages/opencode/src/installation/**` `OPENCODE_*`, `.mimocode`, and commented upstream package-manager channel names | Build-time version globals, legacy install detection, and unpublished upstream channel notes; visible upgrade guidance is already BCS-branded |
+| `packages/opencode/src/session/**`, `packages/opencode/src/project/**`, `packages/opencode/src/lsp/**`, and service tags using `@opencode/*` | Internal Effect service tags, comments, temp paths, and compatibility flags rather than user-facing product copy |
 
 ## Confirm
 
-These need a local decision during implementation.
+These were resolved during Task 6. Items kept here are intentional residuals because there is no BCS replacement service, they preserve upstream compatibility, or they are external hosted-service names rather than internal product branding.
 
-| File | Match | Decision |
+| File | Match | Final decision |
 | --- | --- | --- |
-| `packages/opencode/src/cli/cmd/tui/component/dialog-provider.tsx` | `OpenCode Zen` and `OpenCode Go` | Decide whether these hosted provider upsells are reachable in the BCS internal trial and should be rebranded or hidden |
-| `packages/opencode/src/cli/cmd/tui/component/dialog-provider.tsx` | `https://opencode.ai/zen` | Decide whether the BCS build should keep the upstream hosted billing link, replace it, or suppress the upsell |
-| `packages/opencode/src/cli/cmd/tui/component/dialog-go-upsell.tsx` | `OpenCode Go` and `https://opencode.ai/go` | Decide whether this upsell appears in the internal trial TUI |
-| `packages/opencode/src/cli/cmd/github.ts` | `shareBaseUrl`, `opencode-share`, and `[opencode session]` share comment generation | Decide whether GitHub share comments should keep upstream share URLs, be rebranded, or be disabled in the BCS internal trial |
-| `packages/opencode/src/cli/cmd/tui/i18n/*` | `/share` copy mentioning `opencode.ai` | Decide whether public share links remain available in the internal trial |
-| `packages/opencode/src/cli/cmd/tui/i18n/*` | Docker tips using `ghcr.io/anomalyco/opencode` | Decide whether container tips should be BCS-specific, upstream-attributed, or removed from the internal trial UI |
-| `packages/opencode/src/cli/cmd/tui/i18n/*` | GitHub trigger tips using `/opencode` | Decide whether to keep upstream GitHub automation command text or introduce a BCS-specific trigger |
-| `packages/opencode/src/cli/cmd/tui/i18n/{es,fr,ja,ru,zht}.ts` | Visible MiMo voice/login/free-channel strings including `MiMo Auto (free)`, `MiMo browser login`, and `MiMo account` equivalents | Decide whether non-primary locales are in scope for the same BCS display-label cleanup as `en` and `zh` |
-| `packages/opencode/src/cli/cmd/tui/i18n/*` | `tui.command.opencode.status.title` | Key name should stay; confirm whether surrounding visible command/status text needs BCS wording |
-| `packages/opencode/src/cli/cmd/tui/component/dialog-status.tsx` | `Needs authentication (run: opencode mcp auth {key})` | Visible command example; confirm whether BCS CLI command wording should replace upstream command text |
-| `packages/opencode/src/cli/network.ts` | default mDNS service domain `mimocode.local` | Decide whether the BCS internal package should keep the existing network discovery domain or migrate to a BCS-specific default |
-| `packages/opencode/src/config/config.ts` | upstream docs URLs under `opencode.ai/docs` in generated descriptions | Decide whether generated schema/help docs links should keep upstream documentation, point to internal docs, or be suppressed |
+| `packages/opencode/src/cli/cmd/tui/component/dialog-provider.tsx` | `OpenCode Zen` and `OpenCode Go` | Keep because these are upstream hosted paid-provider product names; changing or hiding them without a BCS billing/provider replacement would misdescribe the reachable service. |
+| `packages/opencode/src/cli/cmd/tui/component/dialog-provider.tsx` | `https://opencode.ai/zen` | Keep because this is the upstream hosted billing/key URL for the retained Zen/Go provider flow. |
+| `packages/opencode/src/cli/cmd/tui/component/dialog-go-upsell.tsx` | `OpenCode Go` and `https://opencode.ai/go` | Keep because the upsell targets the upstream hosted Go product and has no BCS-hosted replacement URL. |
+| `packages/opencode/src/cli/cmd/github.ts` | `shareBaseUrl`, `opencode-share`, and `[opencode session]` share comment generation | Keep because generated comments point to the upstream share-card service and image path; no internal share-card host is configured. |
+| `packages/opencode/src/cli/cmd/tui/i18n/*` | `/share` copy mentioning `opencode.ai` | Keep because the command describes the existing public upstream share host. |
+| `packages/opencode/src/cli/cmd/tui/i18n/*` | Docker tips using `ghcr.io/anomalyco/opencode` | Keep because these tips reference the upstream container image; no BCS image replacement exists in this repo. |
+| `packages/opencode/src/cli/cmd/tui/i18n/*` | GitHub trigger tips using `/opencode` | Keep because `/opencode` is the existing upstream GitHub automation trigger and workflow compatibility surface. |
+| `packages/opencode/src/cli/cmd/tui/i18n/{es,fr,ja,ru,zht}.ts` | Visible MiMo voice/login/free-channel strings including `MiMo Auto (free)`, `MiMo browser login`, and `MiMo account` equivalents | Replaced safe display labels with BCS wording; retained only provider/model IDs such as `mimo_free` and `mimo/mimo-auto`. |
+| `packages/opencode/src/cli/cmd/tui/i18n/*` | `tui.command.opencode.status.title` | Keep because this is an i18n key/state identifier; visible status command labels were already BCS-branded where values required cleanup. |
+| `packages/opencode/src/cli/cmd/tui/component/dialog-status.tsx` | `Needs authentication (run: opencode mcp auth {key})` | Replaced with `bcs-code mcp auth {key}` because it is a visible command example. |
+| `packages/opencode/src/cli/network.ts` | default mDNS service domain `mimocode.local` | Keep because this is the existing discovery domain and changing it would create network compatibility risk without a migration. |
+| `packages/opencode/src/config/config.ts` | upstream docs URLs under `opencode.ai/docs` in generated descriptions | Keep because these are upstream documentation links and no internal docs URL replacement is present. |
 
 ## Task 5 Console/Web/App Surface Classification
 

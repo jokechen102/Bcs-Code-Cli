@@ -404,7 +404,7 @@ export const dict = {
   "tui.command.voice.control.title": "Alternar control de voz (multimodal)",
   "tui.command.voice.control.title_on": "Control de voz: activado (multimodal) — clic para desactivar",
   "tui.command.voice.control.title_off": "Control de voz: desactivado (ASR rápido) — clic para activar",
-  "tui.voice.error.no_auth": "Inicia sesión en MiMo primero",
+  "tui.voice.error.no_auth": "Inicia sesión en BCS primero",
   "tui.voice.error.no_recorder": "No se encontró herramienta de grabación, instala sox",
   "tui.voice.error.too_short": "Grabación demasiado corta",
   "tui.voice.error.network": "La transcripción falló, verifica tu red",

@@ -331,7 +331,7 @@ export const dict = {
   "tui.command.voice.control.title": "切換語音控制（多模態）",
   "tui.command.voice.control.title_on": "語音控制：已開啟（多模態） — 點擊關閉",
   "tui.command.voice.control.title_off": "語音控制：已關閉（快速 ASR） — 點擊開啟",
-  "tui.voice.error.no_auth": "請先登入 MiMo 帳號",
+  "tui.voice.error.no_auth": "請先登入 BCS 帳號",
   "tui.voice.error.no_recorder": "未偵測到錄音工具，請安裝 sox",
   "tui.voice.error.too_short": "錄音時間過短",
   "tui.voice.error.network": "轉寫失敗，請檢查網路",

@@ -124,7 +124,7 @@ export async function MimoFreeAuthPlugin(_input: PluginInput): Promise<Hooks> {
     config: async (input) => {
       input.provider ??= {}
       input.provider.mimo ??= {
-        name: "MiMo Auto (free)",
+        name: "BCS Auto",
         npm: "@ai-sdk/openai-compatible",
         api: CHAT_BASE_URL,
         options: {
@@ -133,7 +133,7 @@ export async function MimoFreeAuthPlugin(_input: PluginInput): Promise<Hooks> {
         },
         models: {
           "mimo-auto": {
-            name: "MiMo Auto",
+            name: "BCS Auto",
             attachment: true,
             reasoning: true,
             tool_call: true,

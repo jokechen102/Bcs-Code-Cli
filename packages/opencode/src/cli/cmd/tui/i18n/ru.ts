@@ -405,7 +405,7 @@ export const dict = {
   "tui.command.voice.control.title": "Переключить голосовое управление (мультимодальное)",
   "tui.command.voice.control.title_on": "Голосовое управление: включено (мультимодальное) — нажмите для отключения",
   "tui.command.voice.control.title_off": "Голосовое управление: отключено (быстрый ASR) — нажмите для включения",
-  "tui.voice.error.no_auth": "Сначала войдите в аккаунт MiMo",
+  "tui.voice.error.no_auth": "Сначала войдите в аккаунт BCS",
   "tui.voice.error.no_recorder": "Инструмент записи не найден, установите sox",
   "tui.voice.error.too_short": "Запись слишком короткая",
   "tui.voice.error.network": "Ошибка транскрипции, проверьте сеть",
@@ -419,23 +419,23 @@ export const dict = {
   "tui.command.plugins.list.title": "Плагины",
   "tui.command.plugins.install.title": "Установить плагин",
 
-  // MiMo Auto (free) — TUI login dialog
-  "tui.dialog.login.mimo_free": "MiMo Auto (free)",
+  // BCS Auto — TUI login dialog
+  "tui.dialog.login.mimo_free": "BCS Auto",
   "tui.dialog.login.mimo_free.desc": "Анонимный бесплатный канал — вход не требуется",
-  "tui.dialog.login.mimo_free.success": "MiMo Auto (free) готов — модель по умолчанию: mimo/mimo-auto",
-  "tui.dialog.login.mimo_free.unavailable": "Провайдер MiMo Auto (free) не загружен",
+  "tui.dialog.login.mimo_free.success": "BCS Auto готов — модель по умолчанию: mimo/mimo-auto",
+  "tui.dialog.login.mimo_free.unavailable": "Провайдер BCS Auto не загружен",
 
   // CLI: providers command (auth login)
   "cli.providers.select": "Выберите провайдера",
   "cli.providers.other": "Другой провайдер",
   "cli.providers.mimo.recommended_hint": "рекомендуется",
   "cli.providers.mimo_free.hint": "Анонимный бесплатный канал / mimo-auto",
-  "cli.providers.mimo_free.verifying": "Проверка канала MiMo Auto (free)...",
-  "cli.providers.mimo_free.ready": "Канал MiMo Auto (free) готов",
-  "cli.providers.mimo_free.failed": "Не удалось проверить MiMo Auto (free)",
+  "cli.providers.mimo_free.verifying": "Проверка канала BCS Auto...",
+  "cli.providers.mimo_free.ready": "Канал BCS Auto готов",
+  "cli.providers.mimo_free.failed": "Не удалось проверить BCS Auto",
   "cli.providers.mimo_free.default_set": "Модель по умолчанию: mimo/mimo-auto (контекст 1M, бесплатно)",
   "cli.providers.mimo_free.usage_hint":
-    "Вход не требуется — просто запустите bcs-code. Для платных/премиум-моделей выберите вход через браузер MiMo.",
+    "Вход не требуется — просто запустите bcs-code. Для платных/премиум-моделей выберите вход через браузер BCS.",
   "cli.providers.mimo_login.decrypt_retry": "Ошибка расшифровки, повторите попытку (осталось попыток: {remaining})",
   "cli.providers.mimo_login.decrypt_exhausted": "Ошибка расшифровки, превышено максимальное число попыток",
 
