@@ -101,7 +101,7 @@ export const PrCommand = cmd({
                 UI.println(`Found BCS Code session: ${sessionUrl}`)
                 UI.println(`Importing session...`)
 
-                const importResult = await Process.text(["mimo", "import", sessionUrl], {
+                const importResult = await Process.text(["bcs-code", "import", sessionUrl], {
                   nothrow: true,
                 })
                 if (importResult.code === 0) {
@@ -123,14 +123,13 @@ export const PrCommand = cmd({
         UI.println("Starting BCS Code...")
         UI.println()
 
-        const mimoArgs = sessionId ? ["-s", sessionId] : []
-        const mimoProcess = Process.spawn(["mimo", ...mimoArgs], {
+        const bcsCodeProcess = Process.spawn(["bcs-code", ...(sessionId ? ["-s", sessionId] : [])], {
           stdin: "inherit",
           stdout: "inherit",
           stderr: "inherit",
           cwd: process.cwd(),
         })
-        const code = await mimoProcess.exited
+        const code = await bcsCodeProcess.exited
         if (code !== 0) throw new Error(`BCS Code exited with code ${code}`)
       },
     })
