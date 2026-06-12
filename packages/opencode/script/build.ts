@@ -54,6 +54,9 @@ const baselineFlag = process.argv.includes("--baseline")
 const skipInstall = process.argv.includes("--skip-install")
 const plugin = createSolidTransformPlugin()
 const skipEmbedWebUi = process.argv.includes("--skip-embed-web-ui")
+const requestedTargets = process.argv
+  .flatMap((item) => (item.startsWith("--target=") ? item.slice("--target=".length).split(",") : []))
+  .filter(Boolean)
 
 const createEmbeddedWebUIBundle = async () => {
   console.log(`Building Web UI to embed in the binary`)
@@ -143,7 +146,19 @@ const allTargets: {
   },
 ]
 
-const targets = singleFlag
+const targetID = (item: (typeof allTargets)[number]) =>
+  [
+    item.os === "win32" ? "windows" : item.os,
+    item.arch,
+    item.avx2 === false ? "baseline" : undefined,
+    item.abi === undefined ? undefined : item.abi,
+  ]
+    .filter(Boolean)
+    .join("-")
+
+const binaryName = (item: (typeof allTargets)[number]) => [BINARY_PREFIX, targetID(item)].filter(Boolean).join("-")
+
+const nativeTargets = singleFlag
   ? allTargets.filter((item) => {
       if (item.os !== process.platform || item.arch !== process.arch) {
         return false
@@ -164,6 +179,14 @@ const targets = singleFlag
     })
   : allTargets
 
+const targets = requestedTargets.length
+  ? allTargets.filter((item) => requestedTargets.includes(targetID(item)) || requestedTargets.includes(binaryName(item)))
+  : nativeTargets
+
+if (targets.length === 0) {
+  throw new Error(`No build targets matched: ${requestedTargets.join(", ")}`)
+}
+
 await $`rm -rf dist`
 
 const binaries: Record<string, string> = {}
@@ -172,16 +195,7 @@ if (!skipInstall) {
   await $`bun install --os="*" --cpu="*" @parcel/watcher@${pkg.dependencies["@parcel/watcher"]}`
 }
 for (const item of targets) {
-  const name = [
-    BINARY_PREFIX,
-    // changing to win32 flags npm for some reason
-    item.os === "win32" ? "windows" : item.os,
-    item.arch,
-    item.avx2 === false ? "baseline" : undefined,
-    item.abi === undefined ? undefined : item.abi,
-  ]
-    .filter(Boolean)
-    .join("-")
+  const name = binaryName(item)
   console.log(`building ${name}`)
   await $`mkdir -p dist/${name}/bin`
 
