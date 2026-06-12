@@ -39,7 +39,8 @@ await Bun.file(`./dist/${pkg.name}/package.json`).write(
     {
       name: pkg.name,
       bin: {
-        mimo: "./bin/mimo",
+        "bcs-code": "./bin/bcs-code",
+        mimo: "./bin/bcs-code",
       },
       scripts: {
         postinstall: "bun ./postinstall.mjs || node ./postinstall.mjs",
