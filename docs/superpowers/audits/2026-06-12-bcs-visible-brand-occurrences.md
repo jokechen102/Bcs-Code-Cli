@@ -52,7 +52,17 @@ These are compatibility, package wiring, tests, schemas, or attribution and must
 | `https://opencode.ai/config.json` | Existing schema URL |
 | README upstream relationship section | Attribution and trademark clarity |
 | `packages/opencode/src/cli/cmd/tui/context/theme.tsx` `mimocode` | Theme key and stored preference compatibility |
+| `packages/opencode/src/cli/cmd/tui/context/local.tsx` `mimo-auto` | Provider/model ID compatibility; display label is BCS Auto |
 | `packages/opencode/src/cli/cmd/tui/context/theme/*.json` `https://opencode.ai/theme.json` | Existing theme schema URL |
+| `packages/opencode/src/cli/cmd/tui/thread.ts` `http://opencode.internal` | Internal worker transport sentinel URL |
+| `packages/opencode/src/cli/cmd/tui/attach.ts` `opencode:` | Basic-auth username compatibility for attach transport |
+| `packages/opencode/src/cli/cmd/tui/config/tui.ts` `@opencode/TuiConfig` | Effect service tag compatibility |
+| `packages/opencode/src/cli/cmd/tui/config/tui-migrate.ts` `https://opencode.ai/tui.json` | Existing TUI schema URL |
+| `packages/opencode/src/cli/cmd/tui/component/dialog-mimo-login.tsx` and `app.tsx` `DialogMimoLogin` / `MimoOAuthFlow` | Internal component/import names; visible login text is localized through BCS labels |
+| `packages/opencode/src/cli/cmd/tui/util/voice.ts` `X-Mimo-Source` and `mimocode-cli` | Xiaomi provider API header compatibility |
+| `packages/opencode/src/cli/cmd/tui/util/sound.ts` and `util/clipboard.ts` `opencode-*` temp names | Local temporary file/cache naming compatibility |
+| `packages/opencode/src/cli/cmd/tui/component/error-component.tsx` `https://github.com/anomalyco/opencode` and `opencode-version` | Upstream bug-report URL/query compatibility |
+| `packages/opencode/src/cli/cmd/tui/**` `opencode` provider, command, and state IDs | Compatibility IDs; visible labels were changed only where classified as Replace |
 | `packages/opencode/src/cli/cmd/tui/plugin/runtime.ts` `.mimocode` and `MIMOCODE_PURE` | Plugin path and flag compatibility |
 | `packages/opencode/src/config/**` `.mimocode`, `mimocode.json`, `MIMOCODE_*`, and `https://opencode.ai/config.json` | Config discovery, env var, and schema compatibility |
 | `packages/opencode/src/project/**` `.mimocode-project-id` and `MIMOCODE_*` | Project identity and flag compatibility |
@@ -81,6 +91,7 @@ These need a local decision during implementation.
 | `packages/opencode/src/cli/cmd/tui/i18n/*` | GitHub trigger tips using `/opencode` | Decide whether to keep upstream GitHub automation command text or introduce a BCS-specific trigger |
 | `packages/opencode/src/cli/cmd/tui/i18n/{es,fr,ja,ru,zht}.ts` | Visible MiMo voice/login/free-channel strings including `MiMo Auto (free)`, `MiMo browser login`, and `MiMo account` equivalents | Decide whether non-primary locales are in scope for the same BCS display-label cleanup as `en` and `zh` |
 | `packages/opencode/src/cli/cmd/tui/i18n/*` | `tui.command.opencode.status.title` | Key name should stay; confirm whether surrounding visible command/status text needs BCS wording |
+| `packages/opencode/src/cli/cmd/tui/component/dialog-status.tsx` | `Needs authentication (run: opencode mcp auth {key})` | Visible command example; confirm whether BCS CLI command wording should replace upstream command text |
 | `packages/opencode/src/config/config.ts` | `Server configuration for mimo serve and web commands` | Decide whether generated schema/help descriptions should use BCS command wording or preserve upstream command references |
 | `packages/opencode/src/config/config.ts` | `every mimocode agent (build/explore/subagents)` | Decide whether generated schema/help descriptions should use BCS product wording or preserve compatibility terminology |
 
