@@ -248,7 +248,7 @@ async function mimoLogin() {
   )
   const mimoHook = hooks.findLast((h) => h.auth?.provider === "xiaomi")
   if (!mimoHook?.auth) {
-    prompts.log.error("MiMo auth plugin not found")
+    prompts.log.error("BCS auth plugin not found")
     return
   }
 
@@ -537,8 +537,8 @@ export const ProvidersLoginCommand = cmd({
           const choice = await prompts.select({
             message: t("cli.providers.select"),
             options: [
-              { label: "MiMo", value: "xiaomi", hint: t("cli.providers.mimo.recommended_hint") },
-              { label: "MiMo Auto (free)", value: "mimo-free", hint: t("cli.providers.mimo_free.hint") },
+              { label: "BCS", value: "xiaomi", hint: t("cli.providers.mimo.recommended_hint") },
+              { label: "BCS Auto", value: "mimo-free", hint: t("cli.providers.mimo_free.hint") },
               { label: t("cli.providers.other"), value: "__other__" },
             ],
           })
@@ -687,10 +687,10 @@ export const ProvidersWhoamiCommand = cmd({
       return
     }
     if (info.type === "api" && info.metadata) {
-      prompts.log.info(`Provider: MiMo`)
+      prompts.log.info(`Provider: BCS`)
       prompts.log.info(`User ID: ${info.metadata.uid ?? "unknown"}`)
     } else {
-      prompts.log.info(`Provider: MiMo`)
+      prompts.log.info(`Provider: BCS`)
       prompts.log.info(`Type: ${info.type}`)
     }
     prompts.outro("")

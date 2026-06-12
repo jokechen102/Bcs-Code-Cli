@@ -29,10 +29,19 @@ rg -n --glob '!node_modules' --glob '!dist' --glob '!bun.lock' --glob '!*.map' "
 | `packages/opencode/src/cli/cmd/tui/i18n/zh.ts` | `MiMo 登录` | `BCS 登录` | `44cbfaa` |
 | `packages/opencode/src/cli/cmd/tui/component/dialog-provider.tsx` | `e.g. mimorouter` | `e.g. bcs-router` | `44cbfaa` |
 | `packages/opencode/src/cli/cmd/tui/component/dialog-provider.tsx` | `e.g. MiMo Router` | `e.g. BCS Router` | `44cbfaa` |
+| `packages/opencode/src/cli/error.ts` | `opencode does not support MCP authentication yet` | `BCS Code does not support MCP authentication yet` | this commit |
+| `packages/opencode/src/cli/error.ts` | ``mimo models`` | ``bcs-code models`` | this commit |
+| `packages/opencode/src/cli/cmd/mcp.ts` | default MCP source label `opencode` | `bcs-code` | this commit |
+| `packages/opencode/src/cli/cmd/providers.ts` | `MiMo auth plugin not found` | `BCS auth plugin not found` | this commit |
+| `packages/opencode/src/cli/cmd/providers.ts` | provider selection label `MiMo` | `BCS` | this commit |
+| `packages/opencode/src/cli/cmd/providers.ts` | provider selection label `MiMo Auto (free)` | `BCS Auto` | this commit |
+| `packages/opencode/src/cli/cmd/providers.ts` | `Provider: MiMo` | `Provider: BCS` | this commit |
+| `packages/opencode/src/config/config.ts` | `Server configuration for mimo serve and web commands` | `Server configuration for BCS Code serve and web commands` | this commit |
+| `packages/opencode/src/config/config.ts` | generated description `every mimocode agent` / `mimocode agents` | `every BCS Code agent` / `BCS Code agents` | this commit |
 
 ## Replace
 
-No pending high-confidence TUI display-label replacements remain after `44cbfaa`. Ambiguous or policy-dependent TUI surfaces remain in `Confirm`.
+No pending high-confidence non-TUI CLI display-label replacements remain after the Task 4 cleanup. Ambiguous or policy-dependent CLI/TUI surfaces remain in `Confirm`.
 
 ## Keep
 
@@ -61,7 +70,7 @@ These are compatibility, package wiring, tests, schemas, or attribution and must
 | `packages/opencode/src/cli/cmd/tui/component/error-component.tsx` `https://github.com/anomalyco/opencode` and `opencode-version` | Upstream bug-report URL/query compatibility |
 | `packages/opencode/src/cli/cmd/tui/**` `opencode` provider, command, and state IDs | Compatibility IDs; visible labels were changed only where classified as Replace |
 | `packages/opencode/src/cli/cmd/tui/plugin/runtime.ts` `.mimocode` and `MIMOCODE_PURE` | Plugin path and flag compatibility |
-| `packages/opencode/src/config/**` `.mimocode`, `mimocode.json`, `MIMOCODE_*`, and `https://opencode.ai/config.json` | Config discovery, env var, and schema compatibility |
+| `packages/opencode/src/config/**` `.mimocode`, `mimocode.json`, `MIMOCODE_*`, `@opencode/Config`, MCP origin labels, and `https://opencode.ai/config.json` | Config discovery, env var, service tag, origin metadata, and schema compatibility; display-only config descriptions listed in Completed Replacements were changed |
 | `packages/opencode/src/project/**` `.mimocode-project-id` and `MIMOCODE_*` | Project identity and flag compatibility |
 | `packages/opencode/deploy/windows/**` `mimocode.json`, `MIMOCODE_DISABLE_MODELS_FETCH`, and `https://opencode.ai/config.json` | Windows package compatibility config |
 | `script/**` `@mimo-ai/script`, `packages/opencode`, `OPENCODE_VERSION`, and release-note filenames | Package wiring, release tooling, and upstream automation |
@@ -70,6 +79,17 @@ These are compatibility, package wiring, tests, schemas, or attribution and must
 | `docs/upstream-sync.md` XiaomiMiMo/MiMo-Code | Upstream sync instructions |
 | `packages/opencode/src/cli/cmd/github.ts` `/opencode`, `opencode-agent`, and `opencode.yml` | External GitHub automation compatibility |
 | `packages/opencode/src/cli/cmd/github.ts` `https://api.opencode.ai` and `https://github.com/apps/opencode-agent` | External GitHub app/API compatibility |
+| `packages/opencode/src/cli/cmd/github.ts` generated workflow text `name: opencode`, `Run opencode`, `anomalyco/opencode/github@latest`, `/opencode`, `/oc`, branch prefixes, OIDC audience, and infrastructure prompt text | External GitHub automation compatibility |
+| `packages/opencode/src/cli/cmd/run.ts` `MIMOCODE_SERVER_USERNAME`, default `mimocode`, and `http://opencode.internal` | Local attach/auth compatibility and internal worker transport sentinel URL |
+| `packages/opencode/src/cli/cmd/models.ts` `opencode` provider sort variables | Provider ID compatibility |
+| `packages/opencode/src/cli/cmd/providers.ts` `MimoFree` import/class references and `mimo-free`/`xiaomi` provider IDs | Plugin/provider ID compatibility; visible labels were changed to BCS |
+| `packages/opencode/src/cli/cmd/providers.ts` `.well-known/opencode`, `opencode` provider ID, `https://opencode.ai/auth`, and Cloudflare docs URL | External provider discovery, provider ID, and upstream docs compatibility |
+| `packages/opencode/src/cli/cmd/providers.ts` `mimocode.json` setup guidance | Existing config file compatibility |
+| `packages/opencode/src/cli/cmd/mcp.ts` `.mimocode`, `mimocode.json`, `mimocode-debug`, and existing config-file setup guidance | Config path/file and OAuth debug client compatibility |
+| `packages/opencode/src/cli/cmd/agent.ts` `.mimocode` | Existing project config directory compatibility |
+| `packages/opencode/src/cli/cmd/plug.ts` `mimocode` file-kind argument | Plugin config file compatibility |
+| `packages/opencode/src/cli/cmd/uninstall.ts` `.mimocode`, `# mimocode`, and unpublished package-manager comments | Backward-compatible cleanup of legacy install paths and comments |
+| `packages/opencode/src/cli/cmd/run-completion.ts` and `packages/opencode/src/cli/cmd/upgrade.ts` `packages/opencode` paths / `OPENCODE_VERSION` | Repository/package path and release tooling compatibility |
 | `packages/opencode/src/tool/websearch/mimo.ts` `api.xiaomimimo.com` and platform URLs | Xiaomi-hosted web search provider endpoint |
 | `packages/opencode/src/tool/**` `mimo-v2.5-pro` comments/examples | Provider behavior notes and model examples |
 
@@ -89,8 +109,8 @@ These need a local decision during implementation.
 | `packages/opencode/src/cli/cmd/tui/i18n/{es,fr,ja,ru,zht}.ts` | Visible MiMo voice/login/free-channel strings including `MiMo Auto (free)`, `MiMo browser login`, and `MiMo account` equivalents | Decide whether non-primary locales are in scope for the same BCS display-label cleanup as `en` and `zh` |
 | `packages/opencode/src/cli/cmd/tui/i18n/*` | `tui.command.opencode.status.title` | Key name should stay; confirm whether surrounding visible command/status text needs BCS wording |
 | `packages/opencode/src/cli/cmd/tui/component/dialog-status.tsx` | `Needs authentication (run: opencode mcp auth {key})` | Visible command example; confirm whether BCS CLI command wording should replace upstream command text |
-| `packages/opencode/src/config/config.ts` | `Server configuration for mimo serve and web commands` | Decide whether generated schema/help descriptions should use BCS command wording or preserve upstream command references |
-| `packages/opencode/src/config/config.ts` | `every mimocode agent (build/explore/subagents)` | Decide whether generated schema/help descriptions should use BCS product wording or preserve compatibility terminology |
+| `packages/opencode/src/cli/network.ts` | default mDNS service domain `mimocode.local` | Decide whether the BCS internal package should keep the existing network discovery domain or migrate to a BCS-specific default |
+| `packages/opencode/src/config/config.ts` | upstream docs URLs under `opencode.ai/docs` in generated descriptions | Decide whether generated schema/help docs links should keep upstream documentation, point to internal docs, or be suppressed |
 
 ## Intentional Task 2 Scan Matches
 
