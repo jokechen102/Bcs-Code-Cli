@@ -45,7 +45,7 @@ OPENCODE_VERSION=0.1.0-bcs.1 ./script/build.ts --single
 
 | 环境变量 | 用途 | 获取方式 |
 |----------|------|----------|
-| `NPM_TOKEN` | npm publish (`@mimo-ai` scope) | npmjs.com → Access Tokens → Granular Token |
+| `NPM_TOKEN` | npm publish (`@bcs-code` scope) | 内网 npm registry token |
 | `GH_TOKEN` | GitHub Release 创建/上传 | `gh auth token` 或 GitHub PAT（repo scope） |
 | `GH_REPO` | 目标 GitHub 仓库 | `XiaomiMiMo/MiMo-Code` |
 
@@ -69,7 +69,7 @@ GH_TOKEN=$(gh auth token) \
 这会依次执行：
 1. **version** — 计算版本号，创建 draft GitHub Release
 2. **build** — 编译全平台 CLI 二进制，上传到 draft Release
-3. **publish npm** — 发布 `@mimo-ai/cli` + 平台包 + SDK + plugin 到 npm
+3. **publish npm** — 发布 `@bcs-code/cli` + `bcs-code-*` 平台包 + SDK + plugin 到内网 npm registry
 4. **finalize release** — 将 GitHub Release 从 draft 改为 published
 
 ### 分步执行
@@ -107,8 +107,8 @@ gh release edit v1.2.3 --draft=false --repo XiaomiMiMo/MiMo-Code
 
 ## 首次发布
 
-1. 确认 npmjs.org 上 `@mimo-ai` org 存在
-2. 创建 Granular Access Token（Packages: Read and write, scope: `@mimo-ai`）
+1. 确认内网 npm registry 上 `@bcs-code` scope 存在
+2. 创建内网 registry 发布 Token（Packages: Read and write, scope: `@bcs-code`）
 3. 确认 `gh auth status` 有 `XiaomiMiMo/MiMo-Code` 的 repo 权限
 4. 设定 package.json 版本为 `0.1.0`
 5. 运行 `./script/release.ts`
@@ -119,10 +119,10 @@ gh release edit v1.2.3 --draft=false --repo XiaomiMiMo/MiMo-Code
 
 | 包名 | 内容 |
 |------|------|
-| `@mimo-ai/cli` | Wrapper 包（bin shim + postinstall） |
-| `mimocode-darwin-arm64` | macOS ARM 二进制 |
-| `mimocode-darwin-x64` | macOS x64 二进制 |
-| `mimocode-linux-arm64` | Linux ARM 二进制 |
-| `mimocode-linux-x64` | Linux x64 二进制 |
-| `mimocode-win32-arm64` | Windows ARM 二进制 |
-| `mimocode-win32-x64` | Windows x64 二进制 |
+| `@bcs-code/cli` | Wrapper 包（bin shim + postinstall） |
+| `bcs-code-darwin-arm64` | macOS ARM 二进制 |
+| `bcs-code-darwin-x64` | macOS x64 二进制 |
+| `bcs-code-linux-arm64` | Linux ARM 二进制 |
+| `bcs-code-linux-x64` | Linux x64 二进制 |
+| `bcs-code-windows-arm64` | Windows ARM 二进制 |
+| `bcs-code-windows-x64` | Windows x64 二进制 |

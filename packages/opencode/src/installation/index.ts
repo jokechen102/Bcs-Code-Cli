@@ -10,10 +10,11 @@ import { Flag } from "../flag/flag"
 import { Log } from "../util"
 import semver from "semver"
 import { InstallationChannel, InstallationVersion } from "./version"
+import { Brand } from "@/brand"
 
 const log = Log.create({ service: "installation" })
 
-const PACKAGE_NAME = "@mimo-ai/cli"
+const PACKAGE_NAME = Brand.packageName
 
 export type Method = "curl" | "npm" | "pnpm" | "bun" | "brew" | "scoop" | "choco" | "unknown"
 
@@ -55,7 +56,7 @@ export const Info = z
   })
 export type Info = z.infer<typeof Info>
 
-export const USER_AGENT = `mimocode/${InstallationChannel}/${InstallationVersion}/${Flag.MIMOCODE_CLIENT}`
+export const USER_AGENT = `${Brand.userAgent}/${InstallationChannel}/${InstallationVersion}/${Flag.MIMOCODE_CLIENT}`
 
 export function isPreview() {
   return InstallationChannel !== "latest"
@@ -144,27 +145,18 @@ export const layer: Layer.Layer<Service, never, HttpClient.HttpClient | ChildPro
 
       const upgradeCurl = Effect.fnUntraced(
         function* (target: string) {
-          const response = yield* httpOk.execute(HttpClientRequest.get("https://mimo.xiaomi.com/install"))
-          const body = yield* response.text
-          const bodyBytes = new TextEncoder().encode(body)
-          const proc = ChildProcess.make("bash", [], {
-            stdin: Stream.make(bodyBytes),
-            env: { VERSION: target },
-            extendEnv: true,
-          })
-          const handle = yield* spawner.spawn(proc)
-          const [stdout, stderr] = yield* Effect.all(
-            [Stream.mkString(Stream.decodeText(handle.stdout)), Stream.mkString(Stream.decodeText(handle.stderr))],
-            { concurrency: 2 },
-          )
-          const code = yield* handle.exitCode
-          return { code, stdout, stderr }
+          return {
+            code: ChildProcessSpawner.ExitCode(1),
+            stdout: "",
+            stderr: `BCS Code internal trial upgrades require a locally built binary. Build ${target}, then run ./install --binary packages/opencode/dist/bcs-code-darwin-arm64/bin/bcs-code.`,
+          }
         },
         Effect.scoped,
         Effect.orDie,
       )
 
       const methodImpl = Effect.fn("Installation.method")(function* () {
+        if (process.execPath.includes(path.join(".bcs-code", "bin"))) return "curl" as Method
         if (process.execPath.includes(path.join(".mimocode", "bin"))) return "curl" as Method
         if (process.execPath.includes(path.join(".local", "bin"))) return "curl" as Method
         const exec = process.execPath.toLowerCase()
