@@ -115,6 +115,27 @@ These need a local decision during implementation.
 | `packages/opencode/src/cli/network.ts` | default mDNS service domain `mimocode.local` | Decide whether the BCS internal package should keep the existing network discovery domain or migrate to a BCS-specific default |
 | `packages/opencode/src/config/config.ts` | upstream docs URLs under `opencode.ai/docs` in generated descriptions | Decide whether generated schema/help docs links should keep upstream documentation, point to internal docs, or be suppressed |
 
+## Task 5 Console/Web Surface Classification
+
+Task 5 scan:
+
+```bash
+rg -n "MiMo|Mimo|OpenCode|opencode" packages/console packages/app 2>/dev/null
+```
+
+Result: 2,475 matches across hosted console website/legal/workspace pages, console mail templates, desktop app UI/i18n/test files, and compatibility identifiers. The Windows internal package path was checked through `script/package-windows-internal.ts`, `docs/internal-trial-release.md`, and `packages/opencode/deploy/windows/**`; it packages `bcs-code.exe`, the Windows installer, Windows package README, WezTerm payload, and generated install settings. No direct bundle or launcher path was found from the BCS Code internal package into `packages/console/**` or `packages/app/**`.
+
+| Surface | Match | Decision |
+| --- | --- | --- |
+| `packages/console/app/src/routes/legal/**` | `OpenCode` | Hosted legal copy; out of scope unless exposed in internal trial |
+| `packages/console/mail/**` | `OpenCode` | Hosted email templates; out of scope unless internal trial sends them |
+| `packages/console/app/src/routes/temp.tsx` | `opencode.ai/install` | Hosted website route; out of scope unless opened by BCS Code |
+| `packages/console/app/src/routes/{index,download,enterprise,brand,changelog,go,zen,black,workspace}/**` and `packages/console/app/src/i18n/**` | `OpenCode`, `opencode`, `MiMo` | Hosted website, billing, docs, and workspace console surfaces; no direct internal package reachability found |
+| `packages/console/function/**` and `packages/console/core/**` | `opencode`, `OpenCode` | Hosted auth/email/billing/service metadata; no direct internal package reachability found |
+| `packages/app/**` | `OpenCode`, `opencode` | Desktop/web app package and local tests; not bundled or launched by the Windows internal CLI package |
+
+No Task 5 code replacement was made because no directly reachable `packages/console/**` or `packages/app/**` surface was identified.
+
 ## Intentional Task 2 Scan Matches
 
 The Task 2 verification scan can still match old-brand strings inside this audit because this file records originals and future cleanup candidates.
