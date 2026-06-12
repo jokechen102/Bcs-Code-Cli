@@ -93,12 +93,12 @@ export const PrCommand = cmd({
               )
             }
 
-            // Check for mimocode session link in PR body
+            // Check for BCS Code session link in PR body
             if (prInfo && prInfo.body) {
               const sessionMatch = prInfo.body.match(/https:\/\/opncd\.ai\/s\/([a-zA-Z0-9_-]+)/)
               if (sessionMatch) {
                 const sessionUrl = sessionMatch[0]
-                UI.println(`Found mimocode session: ${sessionUrl}`)
+                UI.println(`Found BCS Code session: ${sessionUrl}`)
                 UI.println(`Importing session...`)
 
                 const importResult = await Process.text(["mimo", "import", sessionUrl], {
@@ -120,7 +120,7 @@ export const PrCommand = cmd({
 
         UI.println(`Successfully checked out PR #${prNumber} as branch '${localBranchName}'`)
         UI.println()
-        UI.println("Starting mimocode...")
+        UI.println("Starting BCS Code...")
         UI.println()
 
         const mimoArgs = sessionId ? ["-s", sessionId] : []
@@ -131,7 +131,7 @@ export const PrCommand = cmd({
           cwd: process.cwd(),
         })
         const code = await mimoProcess.exited
-        if (code !== 0) throw new Error(`mimo exited with code ${code}`)
+        if (code !== 0) throw new Error(`BCS Code exited with code ${code}`)
       },
     })
   },

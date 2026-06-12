@@ -10,7 +10,7 @@ describe("CLI visible brand", () => {
   })
 
   test("logo glyph rows have stable dimensions", () => {
-    ;[classicLogo, logoThin].forEach((variant) => {
+    [classicLogo, logoThin].forEach((variant) => {
       expect(variant.left).toHaveLength(variant.right.length)
       expect(new Set(variant.left.map((row) => row.length)).size).toBe(1)
       expect(new Set(variant.right.map((row) => row.length)).size).toBe(1)
