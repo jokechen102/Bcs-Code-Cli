@@ -41,3 +41,7 @@ BCS_CODE_SMALL_API_KEY=...
 Do not commit real API keys. Prefer gateway-side allowlists or distribute keys
 through a separate internal channel. If `BCS_CODE_SMALL_API_KEY` is omitted, the
 Windows installer prompts once and stores it in the user's environment.
+
+If endpoint security temporarily locks files under `%TEMP%\bcs-code-wezterm-*`,
+the installer may warn that the temporary directory could not be removed. The
+installation can continue; users may delete that temporary directory later.

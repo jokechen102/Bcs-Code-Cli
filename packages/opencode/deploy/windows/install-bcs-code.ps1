@@ -31,6 +31,20 @@ function Add-UserPath($PathToAdd) {
   $env:Path = (($env:Path.Split(";") + $PathToAdd) | Where-Object { $_ -and $_.Trim() } | Select-Object -Unique) -join ";"
 }
 
+function Remove-DirectoryBestEffort($PathToRemove) {
+  if (!(Test-Path $PathToRemove)) {
+    return
+  }
+  foreach ($attempt in 1..3) {
+    Remove-Item $PathToRemove -Recurse -Force -ErrorAction SilentlyContinue
+    if (!(Test-Path $PathToRemove)) {
+      return
+    }
+    Start-Sleep -Milliseconds (250 * $attempt)
+  }
+  Write-Warning "Could not remove temporary directory: $PathToRemove. You can delete it later."
+}
+
 function Read-Settings($PackageRoot) {
   $settingsPath = Join-Path $PackageRoot "config\install-settings.json"
   if (!(Test-Path $settingsPath)) {
@@ -71,7 +85,7 @@ function Install-WezTerm($PackageRoot) {
   }
   New-Item -ItemType Directory -Path $WezTermRoot -Force | Out-Null
   Copy-Item (Join-Path $weztermExe.DirectoryName "*") $WezTermRoot -Recurse -Force
-  Remove-Item $temp -Recurse -Force
+  Remove-DirectoryBestEffort $temp
   return Join-Path $WezTermRoot "wezterm.exe"
 }
 
