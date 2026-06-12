@@ -368,7 +368,7 @@ export const dict: Record<string, string> = {
   "cli.providers.mimo_free.ready": "MiMo Auto (free) channel ready",
   "cli.providers.mimo_free.failed": "MiMo Auto (free) verification failed",
   "cli.providers.mimo_free.default_set": "Default model set to mimo/mimo-auto (1M context, free)",
-  "cli.providers.mimo_free.usage_hint": "No login required — just run mimo. For paid/premium models, choose MiMo browser login instead.",
+  "cli.providers.mimo_free.usage_hint": "No login required — just run bcs-code. For paid/premium models, choose MiMo browser login instead.",
   "cli.providers.mimo_login.decrypt_retry": "Decryption failed, please retry ({remaining} attempts left)",
   "cli.providers.mimo_login.decrypt_exhausted": "Decryption failed, max retries reached",
   "tui.dialog.login.import_claude": "Import from Claude Code",
