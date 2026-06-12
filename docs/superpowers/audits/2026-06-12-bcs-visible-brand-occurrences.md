@@ -38,6 +38,9 @@ rg -n --glob '!node_modules' --glob '!dist' --glob '!bun.lock' --glob '!*.map' "
 | `packages/opencode/src/cli/cmd/providers.ts` | `Provider: MiMo` | `Provider: BCS` | this commit |
 | `packages/opencode/src/config/config.ts` | `Server configuration for mimo serve and web commands` | `Server configuration for BCS Code serve and web commands` | this commit |
 | `packages/opencode/src/config/config.ts` | generated description `every mimocode agent` / `mimocode agents` | `every BCS Code agent` / `BCS Code agents` | this commit |
+| `packages/opencode/src/cli/cmd/pr.ts` | ``mimo import`` runtime invocation | ``bcs-code import`` | `b525a28` |
+| `packages/opencode/src/cli/cmd/pr.ts` | spawned CLI binary `mimo` | `bcs-code` | `b525a28` |
+| `packages/opencode/src/cli/bootstrap.ts` | ``Headless `mimo run` `` | ``Headless `bcs-code run` `` | `b525a28` |
 
 ## Replace
 
