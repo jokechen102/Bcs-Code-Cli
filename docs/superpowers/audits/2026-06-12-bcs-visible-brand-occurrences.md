@@ -115,7 +115,7 @@ These need a local decision during implementation.
 | `packages/opencode/src/cli/network.ts` | default mDNS service domain `mimocode.local` | Decide whether the BCS internal package should keep the existing network discovery domain or migrate to a BCS-specific default |
 | `packages/opencode/src/config/config.ts` | upstream docs URLs under `opencode.ai/docs` in generated descriptions | Decide whether generated schema/help docs links should keep upstream documentation, point to internal docs, or be suppressed |
 
-## Task 5 Console/Web Surface Classification
+## Task 5 Console/Web/App Surface Classification
 
 Task 5 scan:
 
@@ -123,7 +123,17 @@ Task 5 scan:
 rg -n "MiMo|Mimo|OpenCode|opencode" packages/console packages/app 2>/dev/null
 ```
 
-Result: 2,475 matches across hosted console website/legal/workspace pages, console mail templates, desktop app UI/i18n/test files, and compatibility identifiers. The Windows internal package path was checked through `script/package-windows-internal.ts`, `docs/internal-trial-release.md`, and `packages/opencode/deploy/windows/**`; it packages `bcs-code.exe`, the Windows installer, Windows package README, WezTerm payload, and generated install settings. No direct bundle or launcher path was found from the BCS Code internal package into `packages/console/**` or `packages/app/**`.
+Result before Task 5 app cleanup: 2,475 matches across hosted console website/legal/workspace pages, console mail templates, embedded app UI/i18n/test files, and compatibility identifiers.
+
+The Windows internal package path was checked through `script/package-windows-internal.ts`, `packages/opencode/script/build.ts`, `packages/opencode/src/server/routes/ui.ts`, `docs/internal-trial-release.md`, and `packages/opencode/deploy/windows/**`. The Windows package builds `bcs-code.exe` with `packages/opencode/script/build.ts --target=windows-x64`; unless `--skip-embed-web-ui` is passed, that build embeds `../../app`, serves it from `packages/opencode/src/server/routes/ui.ts`, and makes it reachable through `bcs-code web`. Therefore `packages/app/**` is an embedded/reachable surface and is classified separately from hosted `packages/console/**`.
+
+Task 5 app-specific scan:
+
+```bash
+rg -n "MiMo|Mimo|OpenCode|opencode" packages/app 2>/dev/null
+```
+
+Result after Task 5 app cleanup: 291 matches. Patched directly visible embedded app display text in `packages/app/index.html` and `packages/app/src/i18n/*.ts`: document title, app name, server/settings/update/error/getting-started copy, provider connect copy, and free-model dialog copy now use `BCS Code` instead of `OpenCode`. Remaining app matches are classified below as compatibility identifiers, hosted endpoints/assets, tests/fixtures, local docs, or internal names.
 
 | Surface | Match | Decision |
 | --- | --- | --- |
@@ -132,9 +142,15 @@ Result: 2,475 matches across hosted console website/legal/workspace pages, conso
 | `packages/console/app/src/routes/temp.tsx` | `opencode.ai/install` | Hosted website route; out of scope unless opened by BCS Code |
 | `packages/console/app/src/routes/{index,download,enterprise,brand,changelog,go,zen,black,workspace}/**` and `packages/console/app/src/i18n/**` | `OpenCode`, `opencode`, `MiMo` | Hosted website, billing, docs, and workspace console surfaces; no direct internal package reachability found |
 | `packages/console/function/**` and `packages/console/core/**` | `opencode`, `OpenCode` | Hosted auth/email/billing/service metadata; no direct internal package reachability found |
-| `packages/app/**` | `OpenCode`, `opencode` | Desktop/web app package and local tests; not bundled or launched by the Windows internal CLI package |
-
-No Task 5 code replacement was made because no directly reachable `packages/console/**` or `packages/app/**` surface was identified.
+| `packages/app/index.html` | `<title>OpenCode</title>` | Embedded web UI document title; replaced with `BCS Code` |
+| `packages/app/src/i18n/*.ts` | visible `OpenCode` display copy | Embedded web UI text; replaced with `BCS Code` across locales |
+| `packages/app/src/i18n/*.ts` | `opencode.json` | Existing config filename; keep |
+| `packages/app/src/i18n/*.ts` and `packages/app/src/components/**` | `opencode` / `opencode-go` provider IDs and `provider.connect.opencodeZen.*` keys | Provider/key compatibility; visible values were rebranded where they contained `OpenCode` |
+| `packages/app/src/pages/layout/deep-links.ts` and tests | `opencode://` | Existing deep-link scheme compatibility; keep |
+| `packages/app/src/utils/persist.ts`, `packages/app/public/oc-theme-preload.js`, and tests | `opencode.*` storage keys | Existing local storage compatibility; keep |
+| `packages/app/src/pages/error.tsx`, `packages/app/src/pages/layout.tsx`, `packages/app/src/components/dialog-connect-provider.tsx`, `packages/app/src/components/dialog-custom-provider.tsx`, `packages/app/src/components/settings-general.tsx`, `packages/app/src/context/highlights.tsx`, `packages/app/src/entry.tsx`, `packages/app/src/pages/layout/sidebar-items.tsx` | `opencode.ai` URLs/assets | Hosted endpoints/assets/docs/feedback links; keep unless BCS-hosted replacements exist |
+| `packages/app/src/pages/layout/deep-links.ts` | `OpenCodeWindow` | Internal type name only; keep |
+| `packages/app/**/*.test.ts*`, `packages/app/README.md`, `packages/app/AGENTS.md`, `packages/app/vite.js` | `opencode` | Tests, local docs, dev plugin names, and fixtures; keep |
 
 ## Intentional Task 2 Scan Matches
 
