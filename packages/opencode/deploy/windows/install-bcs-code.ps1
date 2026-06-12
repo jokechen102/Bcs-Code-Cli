@@ -265,20 +265,45 @@ return {
   } else {
     Split-Path $BcsCodeExe -Parent
   }
+  $launchBcsCode = @(
+    "`$launcherLog = Join-Path `$PSScriptRoot 'start-bcs-code.log'",
+    'try {',
+    "  if (`$args.Count -gt 0) {",
+    "    & $(ConvertTo-PowerShellLiteral $BcsCodeExe) @args",
+    '  } else {',
+    "    & $(ConvertTo-PowerShellLiteral $BcsCodeExe)",
+    '  }',
+    '  `$exitCode = `$LASTEXITCODE',
+    '  if (`$exitCode -ne 0) {',
+    '    `$message = "BCS Code exited with code $exitCode"',
+    '    Add-Content -Path `$launcherLog -Value ((Get-Date -Format o) + " " + `$message)',
+    '    Write-Warning `$message',
+    '    Write-Warning "Check log: $launcherLog"',
+    '    [void][Console]::ReadLine()',
+    '  }',
+    '}',
+    'catch {',
+    '  `$message = "BCS Code launch failed: $($_.Exception.Message)"',
+    '  Add-Content -Path `$launcherLog -Value ((Get-Date -Format o) + " " + `$message)',
+    '  Write-Warning `$message',
+    '  Write-Warning "Check log: $launcherLog"',
+    '  [void][Console]::ReadLine()',
+    '}',
+  )
   $startCommands = if ($wezTermAvailable) {
     @(
       "& $(ConvertTo-PowerShellLiteral $WezTermExe) --config-file $(ConvertTo-PowerShellLiteral $wezConfig) start --cwd `$env:USERPROFILE -- $(ConvertTo-PowerShellLiteral $BcsCodeExe)"
       "if (`$LASTEXITCODE -ne 0) {"
       "  Write-Warning 'WezTerm failed to start. Falling back to the console launcher.'"
-      "  & $(ConvertTo-PowerShellLiteral $BcsCodeExe)"
+    ) + $launchBcsCode + @(
       "}"
     )
   } else {
-    @("& $(ConvertTo-PowerShellLiteral $BcsCodeExe)")
+    $launchBcsCode
   }
 
   (
-    @(
+  @(
     '$ErrorActionPreference = "Stop"'
     '$env:MIMOCODE_DISABLE_MODELS_FETCH = "1"'
     "`$fullApiKey = [Environment]::GetEnvironmentVariable($(ConvertTo-PowerShellLiteral $fullEnvKey), 'User')"
