@@ -14,9 +14,10 @@ The generated package installs:
 Build the package from the repository root:
 
 ```bash
-BCS_CODE_BASE_URL=https://llm-gateway.example.com/v1 \
-BCS_CODE_MODEL=qwen3-coder \
-BCS_CODE_SMALL_MODEL=qwen3-coder-lite \
+BCS_CODE_FULL_BASE_URL=http://100.89.126.33:8008/v1 \
+BCS_CODE_MODEL=dsv4 \
+BCS_CODE_SMALL_BASE_URL=http://100.115.100.130:30279/8a620da96ee846738ddc72414be2c712/v1 \
+BCS_CODE_SMALL_MODEL=Qwen-3.6-27B \
 OPENCODE_VERSION=0.1.0-bcs.1 \
   ./script/package-windows-internal.ts
 ```
@@ -24,14 +25,17 @@ OPENCODE_VERSION=0.1.0-bcs.1 \
 Optional package-time settings:
 
 ```bash
-BCS_CODE_PROVIDER_ID=bcs-internal
-BCS_CODE_PROVIDER_NAME="BCS Internal LLM"
-BCS_CODE_MODEL_NAME="Qwen3 Coder"
-BCS_CODE_SMALL_MODEL_NAME="Qwen3 Coder Lite"
+BCS_CODE_FULL_PROVIDER_ID=bcs-full
+BCS_CODE_FULL_PROVIDER_NAME="BCS Full Model"
+BCS_CODE_SMALL_PROVIDER_ID=bcs-lite
+BCS_CODE_SMALL_PROVIDER_NAME="BCS Lite Model"
+BCS_CODE_MODEL_NAME=dsv4
+BCS_CODE_SMALL_MODEL_NAME="Qwen 3.6 27B"
 BCS_CODE_CONTEXT_WINDOW=262144
 BCS_CODE_OUTPUT_WINDOW=8192
-BCS_CODE_API_KEY=...
+BCS_CODE_SMALL_API_KEY=...
 ```
 
 Do not commit real API keys. Prefer gateway-side allowlists or distribute keys
-through a separate internal channel.
+through a separate internal channel. If `BCS_CODE_SMALL_API_KEY` is omitted, the
+Windows installer prompts once and stores it in the user's environment.
