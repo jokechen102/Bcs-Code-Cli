@@ -14,10 +14,10 @@ rg -n --glob '!node_modules' --glob '!dist' --glob '!bun.lock' --glob '!*.map' "
 
 | File | Original | Replacement | Commit |
 | --- | --- | --- | --- |
-| `README.md` | `MiMo Auto` | `BCS Auto` | pending |
-| `README.md` | `Xiaomi MiMo Platform` | `BCS Model Platform` | pending |
-| `README.md` | `MiMo ASR` | `BCS Voice` | pending |
-| `README.md` | `MiMo logged-in users` | `BCS logged-in users` | pending |
+| `README.md` | `MiMo Auto` | `BCS Auto` | `0b160be` |
+| `README.md` | `Xiaomi MiMo Platform` | `BCS Model Platform` | `0b160be` |
+| `README.md` | `MiMo ASR` | `BCS Voice` | `0b160be` |
+| `README.md` | `MiMo logged-in users` | `BCS logged-in users` | `0b160be` |
 
 ## Replace
 
