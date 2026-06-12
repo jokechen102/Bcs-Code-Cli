@@ -89,7 +89,7 @@ async function main() {
     }
     fs.chmodSync(target, 0o755)
   } catch (error) {
-    console.error("Failed to setup opencode binary:", error.message)
+    console.error("Failed to setup BCS Code binary:", error.message)
     process.exit(1)
   }
 }
