@@ -5,7 +5,9 @@ This folder contains the Windows one-click deployment resources used by
 
 The generated package installs:
 
-- WezTerm for the current Windows user from the bundled official Windows zip.
+- A private embedded WezTerm under `%LOCALAPPDATA%\Programs\BCS Code\wezterm`
+  from the bundled official Windows zip. Existing user WezTerm installs and
+  configs are not modified.
 - `bcs-code.exe` under `%LOCALAPPDATA%\Programs\BCS Code\bin`.
 - Global BCS Code provider config under `%USERPROFILE%\.config\mimocode\mimocode.json`.
 - User environment variable `MIMOCODE_DISABLE_MODELS_FETCH=1`.

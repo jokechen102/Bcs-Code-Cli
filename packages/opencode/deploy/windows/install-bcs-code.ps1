@@ -1,6 +1,6 @@
 param(
   [string]$InstallRoot = "$env:LOCALAPPDATA\Programs\BCS Code",
-  [string]$WezTermRoot = "$env:LOCALAPPDATA\Programs\WezTerm",
+  [string]$WezTermRoot = "$env:LOCALAPPDATA\Programs\BCS Code\wezterm",
   [switch]$SkipShortcut,
   [switch]$SkipPath
 )
@@ -283,7 +283,6 @@ Write-Launchers $wezTermExe $bcsCodeExe $settings
 
 if (!$SkipPath) {
   Add-UserPath (Split-Path $bcsCodeExe -Parent)
-  Add-UserPath (Split-Path $wezTermExe -Parent)
 }
 
 Write-Step "Verifying bcs-code version"

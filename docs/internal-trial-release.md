@@ -59,7 +59,7 @@ The generated zip is written under `dist/internal/`. It bundles:
 - `install-bcs-code.ps1`
 - `config/install-settings.json`
 
-End users unzip the package and run `install-bcs-code.cmd`. The installer installs WezTerm first, installs BCS Code, writes the default internal model config, disables public model-list fetching, updates the user PATH, and creates launch shortcuts.
+End users unzip the package and run `install-bcs-code.cmd`. The installer installs a private embedded WezTerm under `%LOCALAPPDATA%\Programs\BCS Code\wezterm`, installs BCS Code, writes the default internal model config, disables public model-list fetching, updates the user PATH for `bcs-code`, and creates launch shortcuts. Existing user WezTerm installs and configs are not modified.
 
 The default config uses two OpenAI-compatible providers: `bcs-full/dsv4` for the main model and `bcs-lite/Qwen-3.6-27B` for the small model. If `BCS_CODE_SMALL_API_KEY` is omitted at package time, the Windows installer prompts once and stores it in the user's environment.
 
