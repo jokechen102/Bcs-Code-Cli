@@ -60,7 +60,7 @@ function configuredServers(config: Config.Info) {
 
 function sourceLabel(config: Config.Info, name: string) {
   const origin = config.mcp_origins?.[name]
-  if (!origin) return "opencode"
+  if (!origin) return "bcs-code"
   const home = Global.Path.home
   const source = origin.source === home ? "~" : origin.source.startsWith(home + path.sep) ? "~" + origin.source.slice(home.length) : origin.source
   return `${origin.type}:${source}`
@@ -133,7 +133,7 @@ export const McpListCommand = cmd({
 
         if (servers.length === 0) {
           prompts.log.warn("No MCP servers configured")
-          prompts.outro("Add servers with: mimo mcp add")
+          prompts.outro("Add servers with: bcs-code mcp add")
           return
         }
 
@@ -524,7 +524,7 @@ export const McpAddCommand = cmd({
         if (type === "local") {
           const command = await prompts.text({
             message: "Enter command to run",
-            placeholder: "e.g., mimo x @modelcontextprotocol/server-filesystem",
+            placeholder: "e.g., npx -y @modelcontextprotocol/server-filesystem",
             validate: (x) => (x && x.length > 0 ? undefined : "Required"),
           })
           if (prompts.isCancel(command)) throw new UI.CancelledError()

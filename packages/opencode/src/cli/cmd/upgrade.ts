@@ -7,7 +7,7 @@ import { InstallationVersion } from "../../installation/version"
 
 export const UpgradeCommand = {
   command: "upgrade [target]",
-  describe: "upgrade mimocode to the latest or a specific version",
+  describe: "upgrade BCS Code to the latest or a specific version",
   builder: (yargs: Argv) => {
     return yargs
       .positional("target", {
@@ -29,7 +29,7 @@ export const UpgradeCommand = {
     const detectedMethod = await AppRuntime.runPromise(Installation.Service.use((svc) => svc.method()))
     const method = (args.method as Installation.Method) ?? detectedMethod
     if (method === "unknown") {
-      prompts.log.error(`opencode is installed to ${process.execPath} and may be managed by a package manager`)
+      prompts.log.error(`BCS Code is installed to ${process.execPath} and may be managed by a package manager`)
       const install = await prompts.select({
         message: "Install anyways?",
         options: [
@@ -44,12 +44,21 @@ export const UpgradeCommand = {
       }
     }
     prompts.log.info("Using method: " + method)
+    if (method === "curl" && !args.target) {
+      prompts.log.error("BCS Code internal trial upgrades require a locally built binary.")
+      prompts.log.info("Build first: cd packages/opencode && OPENCODE_VERSION=0.1.0-bcs.1 ./script/build.ts --single")
+      prompts.log.info(
+        "Then run from the repository root: ./install --binary packages/opencode/dist/bcs-code-darwin-arm64/bin/bcs-code",
+      )
+      prompts.outro("Done")
+      return
+    }
     const target = args.target
       ? args.target.replace(/^v/, "")
       : await AppRuntime.runPromise(Installation.Service.use((svc) => svc.latest()))
 
     if (InstallationVersion === target) {
-      prompts.log.warn(`opencode upgrade skipped: ${target} is already installed`)
+      prompts.log.warn(`BCS Code upgrade skipped: ${target} is already installed`)
       prompts.outro("Done")
       return
     }

@@ -6,7 +6,7 @@ import { TuiConfig } from "@/cli/cmd/tui/config/tui"
 
 export const AttachCommand = cmd({
   command: "attach <url>",
-  describe: "attach to a running mimocode server",
+  describe: "attach to a running BCS Code server",
   builder: (yargs) =>
     yargs
       .positional("url", {

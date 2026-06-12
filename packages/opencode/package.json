@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "version": "0.1.0",
-  "name": "@mimo-ai/cli",
+  "name": "@bcs-code/cli",
   "type": "module",
   "license": "MIT",
   "publishConfig": {
@@ -22,7 +22,8 @@
     "db": "bun drizzle-kit"
   },
   "bin": {
-    "mimo": "./bin/mimo"
+    "bcs-code": "./bin/bcs-code",
+    "mimo": "./bin/bcs-code"
   },
   "exports": {
     "./*": "./src/*.ts"

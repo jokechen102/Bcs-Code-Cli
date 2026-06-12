@@ -1,40 +1,45 @@
-<h1 align="center">MiMoCode</h1>
+<h1 align="center">BCS Code</h1>
 
 <p align="center">
-  <img src="assets/readme/mimocode-banner.png" alt="MiMoCode" width="700">
+  <img src="assets/readme/bcs-code-banner.png" alt="BCS Code" width="700">
 </p>
 
-<p align="center"><strong>An open-source AI coding agent with cross-session memory.</strong></p>
+<p align="center"><strong>Internal trial AI coding agent distribution for BCS.</strong></p>
 
 <p align="center">
   <a href="README.zh.md">中文</a> | English
 </p>
 
 <p align="center">
-  <a href="https://mimo.xiaomi.com/en/mimocode">Website</a> | <a href="https://mimo.xiaomi.com/en/blog/mimo-code-long-horizon">Blog</a>
+  <a href="https://mimo.xiaomi.com/en/mimocode">Upstream Website</a> | <a href="https://mimo.xiaomi.com/en/blog/mimo-code-long-horizon">Upstream Blog</a>
 </p>
 
 ---
 
-MiMoCode is a terminal-native AI coding assistant. It can read and write code, run commands, manage Git, and use a persistent memory system to keep a deep understanding of your project across sessions while continuously improving itself.
+BCS Code is an internal trial distribution based on Xiaomi MiMoCode, which is itself built from OpenCode. The internal distribution keeps upstream capabilities while applying BCS-specific branding and packaging for controlled evaluation.
 
-MiMo Auto is built in as a free-for-limited-time channel, so you can start with zero configuration. MiMoCode also supports connecting to any mainstream LLM provider API.
+BCS Auto is built in as a free-for-limited-time channel, so you can start with zero configuration. BCS Code also supports connecting to any mainstream LLM provider API.
 
 ---
 
 ## Quick Start
 
 ```bash
-# One-line install
-curl -fsSL https://mimo.xiaomi.com/install | bash
+# Build current-platform binary
+cd packages/opencode
+OPENCODE_VERSION=0.1.0-bcs.1 ./script/build.ts --single
+cd ../..
 
-# Or install via npm
-npm install -g @mimo-ai/cli
+# Install local binary on Apple Silicon macOS
+./install --binary packages/opencode/dist/bcs-code-darwin-arm64/bin/bcs-code
+
+# Planned internal npm registry path
+npm install -g @bcs-code/cli
 ```
 
-The first launch guides you through configuration automatically. Supported options:
-- **MiMo Auto (free for a limited time)** — anonymous channel, zero configuration
-- **Xiaomi MiMo Platform** — OAuth login
+Run `bcs-code` after installation. The first launch guides you through configuration automatically. Supported options:
+- **BCS Auto (free for a limited time)** — anonymous channel, zero configuration
+- **BCS Model Platform** — OAuth login
 - **Import from Claude Code** — migrate existing authentication in one step
 - **Custom Provider** — add any OpenAI-compatible API in the TUI
 
@@ -87,7 +92,7 @@ Compose mode provides a structured workflow for specs-driven development. It inc
 
 ### Voice Input
 
-Real-time streaming voice input powered by TenVAD and MiMo ASR. Activate with `/voice`, then speak — audio is segmented by pauses and transcribed incrementally into the input. Available for MiMo logged-in users.
+Real-time streaming voice input powered by TenVAD and BCS Voice. Activate with `/voice`, then speak — audio is segmented by pauses and transcribed incrementally into the input. Available for BCS logged-in users.
 
 ### Dream & Distill
 
@@ -98,7 +103,7 @@ Real-time streaming voice input powered by TenVAD and MiMo ASR. Activate with `/
 
 ## Configuration
 
-MiMoCode is configured via `.mimocode/mimocode.json` in the project directory (or `~/.config/mimocode/mimocode.json` globally). Key options include:
+BCS Code currently keeps the upstream MiMoCode configuration paths: `.mimocode/mimocode.json` in the project directory, or `~/.config/mimocode/mimocode.json` globally. Key options include:
 
 - Provider and model selection
 - Agent permissions and custom agents
@@ -120,9 +125,9 @@ bun turbo typecheck      # Type check
 
 ---
 
-## Relationship to OpenCode
+## Relationship to Xiaomi MiMoCode and OpenCode
 
-MiMoCode is built as a fork of [OpenCode](https://github.com/anomalyco/opencode). It keeps all core OpenCode capabilities (multiple providers, TUI, LSP, MCP, plugins) and adds persistent memory, intelligent context management, subagent orchestration, goal-driven autonomous loops, compose workflows, and self-improvement via dream/distill.
+BCS Code is based on Xiaomi MiMoCode, which is built as a fork of [OpenCode](https://github.com/anomalyco/opencode). It keeps the upstream core capabilities (multiple providers, TUI, LSP, MCP, plugins, memory, subagents, compose workflows, and dream/distill) while changing only the internal trial branding and packaging entrypoints.
 
 ---
 
@@ -142,6 +147,6 @@ Scan the QR code to join the community group chat:
 
 Source code is licensed under the [MIT License](./LICENSE).
 
-Use of MiMoCode is also subject to the [Use Restrictions](./USE_RESTRICTIONS.md).
+Use of BCS Code is also subject to the [Use Restrictions](./USE_RESTRICTIONS.md).
 Use of Xiaomi MiMo-hosted services is subject to the [MiMo Terms of Service](https://platform.xiaomimimo.com/docs/terms/user-agreement).
 Use of the MiMo name, logo, and trademarks is subject to the MiMo Trademark Policy.
