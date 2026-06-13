@@ -24,11 +24,12 @@ export type ResolvedPaths = {
  * @throws if MIMOCODE_HOME is set but not an absolute path
  */
 export function resolveMimocodeHome(env: NodeJS.ProcessEnv = process.env): ResolvedPaths {
-  const home = env.MIMOCODE_HOME
+  const home = env.BCS_CODE_HOME || env.MIMOCODE_HOME
   if (home) {
     if (!path.isAbsolute(home)) {
+      const key = env.BCS_CODE_HOME ? "BCS_CODE_HOME" : "MIMOCODE_HOME"
       throw new Error(
-        `MIMOCODE_HOME must be an absolute path, got: ${JSON.stringify(home)}`,
+        `${key} must be an absolute path, got: ${JSON.stringify(home)}`,
       )
     }
     return {

@@ -31,6 +31,7 @@ import { useArgs } from "./args"
 import { batch, onMount } from "solid-js"
 import { Log } from "@/util"
 import { emptyConsoleState, type ConsoleState } from "@/config/console-state"
+import { Flag } from "@/flag/flag"
 
 /**
  * The SDK regenerated the task list as an inline anonymous array on
@@ -743,7 +744,7 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
         return store.status
       },
       get ready() {
-        if (process.env.MIMOCODE_FAST_BOOT) return true
+        if (Flag.MIMOCODE_FAST_BOOT) return true
         return store.status !== "loading"
       },
       get path() {

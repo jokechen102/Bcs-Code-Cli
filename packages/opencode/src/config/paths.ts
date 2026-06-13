@@ -10,13 +10,14 @@ import * as Effect from "effect/Effect"
 import { AppFileSystem } from "@mimo-ai/shared/filesystem"
 
 export const files = Effect.fn("ConfigPaths.projectFiles")(function* (
-  name: string,
+  name: string | string[],
   directory: string,
   worktree?: string,
 ) {
   const afs = yield* AppFileSystem.Service
+  const names = Array.isArray(name) ? name : [name]
   return (yield* afs.up({
-    targets: [`${name}.jsonc`, `${name}.json`],
+    targets: names.flatMap((item) => [`${item}.jsonc`, `${item}.json`]),
     start: directory,
     stop: worktree,
   })).toReversed()
@@ -28,13 +29,13 @@ export const directories = Effect.fn("ConfigPaths.directories")(function* (direc
     Global.Path.config,
     ...(!Flag.MIMOCODE_DISABLE_PROJECT_CONFIG
       ? yield* afs.up({
-          targets: [".mimocode"],
+          targets: [".bcs-code", ".mimocode"],
           start: directory,
           stop: worktree,
         })
       : []),
     ...(yield* afs.up({
-      targets: [".mimocode"],
+      targets: [".bcs-code", ".mimocode"],
       start: Global.Path.home,
       stop: Global.Path.home,
     })),

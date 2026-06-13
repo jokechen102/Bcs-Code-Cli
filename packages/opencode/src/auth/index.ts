@@ -3,6 +3,7 @@ import { Effect, Layer, Record, Result, Schema, Context } from "effect"
 import { zod } from "@/util/effect-zod"
 import { Global } from "../global"
 import { AppFileSystem } from "@mimo-ai/shared/filesystem"
+import { Flag } from "@/flag/flag"
 
 export const OAUTH_DUMMY_KEY = "mimocode-oauth-dummy-key"
 
@@ -56,9 +57,9 @@ export const layer = Layer.effect(
     const decode = Schema.decodeUnknownOption(Info)
 
     const all = Effect.fn("Auth.all")(function* () {
-      if (process.env.MIMOCODE_AUTH_CONTENT) {
+      if (Flag.MIMOCODE_AUTH_CONTENT) {
         try {
-          return JSON.parse(process.env.MIMOCODE_AUTH_CONTENT)
+          return JSON.parse(Flag.MIMOCODE_AUTH_CONTENT)
         } catch (err) {}
       }
 
