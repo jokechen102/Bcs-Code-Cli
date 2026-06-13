@@ -221,7 +221,9 @@ function Write-BcsConfig($Settings) {
   }
 
   $config | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $configDir "mimocode.json") -Encoding UTF8
+  [Environment]::SetEnvironmentVariable("BCS_CODE_DISABLE_MODELS_FETCH", "1", "User")
   [Environment]::SetEnvironmentVariable("MIMOCODE_DISABLE_MODELS_FETCH", "1", "User")
+  $env:BCS_CODE_DISABLE_MODELS_FETCH = "1"
   $env:MIMOCODE_DISABLE_MODELS_FETCH = "1"
 }
 
@@ -305,6 +307,7 @@ return {
   (
   @(
     '$ErrorActionPreference = "Stop"'
+    '$env:BCS_CODE_DISABLE_MODELS_FETCH = "1"'
     '$env:MIMOCODE_DISABLE_MODELS_FETCH = "1"'
     "`$fullApiKey = [Environment]::GetEnvironmentVariable($(ConvertTo-PowerShellLiteral $fullEnvKey), 'User')"
     "if (`$fullApiKey) { [Environment]::SetEnvironmentVariable($(ConvertTo-PowerShellLiteral $fullEnvKey), `$fullApiKey, 'Process') }"

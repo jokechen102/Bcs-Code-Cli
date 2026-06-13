@@ -147,6 +147,56 @@ test("loads JSON config file", async () => {
   })
 })
 
+test("loads BCS Code project config file aliases", async () => {
+  await using tmp = await tmpdir({
+    init: async (dir) => {
+      await writeConfig(
+        dir,
+        {
+          $schema: "https://opencode.ai/config.json",
+          model: "test/bcs-code-json",
+          username: "bcs-code-json-user",
+        },
+        "bcs-code.json",
+      )
+    },
+  })
+  await Instance.provide({
+    directory: tmp.path,
+    fn: async () => {
+      const config = await load()
+      expect(config.model).toBe("test/bcs-code-json")
+      expect(config.username).toBe("bcs-code-json-user")
+    },
+  })
+})
+
+test("loads .bcs-code directory config aliases", async () => {
+  await using tmp = await tmpdir({
+    init: async (dir) => {
+      const configDir = path.join(dir, ".bcs-code")
+      await fs.mkdir(configDir, { recursive: true })
+      await writeConfig(
+        configDir,
+        {
+          $schema: "https://opencode.ai/config.json",
+          model: "test/dot-bcs-code",
+          username: "dot-bcs-code-user",
+        },
+        "bcs-code.jsonc",
+      )
+    },
+  })
+  await Instance.provide({
+    directory: tmp.path,
+    fn: async () => {
+      const config = await load()
+      expect(config.model).toBe("test/dot-bcs-code")
+      expect(config.username).toBe("dot-bcs-code-user")
+    },
+  })
+})
+
 test("loads Claude Code MCP servers from home and project config", async () => {
   await writeClaudeConfig(path.join(Global.Path.home, ".claude.json"), {
     mcpServers: {

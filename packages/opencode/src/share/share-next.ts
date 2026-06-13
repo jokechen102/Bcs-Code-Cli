@@ -13,9 +13,10 @@ import { Database, eq } from "@/storage"
 import { Config } from "@/config"
 import { Log } from "@/util"
 import { SessionShareTable } from "./share.sql"
+import { Flag } from "@/flag/flag"
 
 const log = Log.create({ service: "share-next" })
-const disabled = process.env["MIMOCODE_DISABLE_SHARE"] === "true" || process.env["MIMOCODE_DISABLE_SHARE"] === "1"
+const disabled = Flag.MIMOCODE_DISABLE_SHARE
 
 export type Api = {
   create: string

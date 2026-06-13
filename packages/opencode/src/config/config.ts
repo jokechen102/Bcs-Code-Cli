@@ -462,7 +462,7 @@ export interface Interface {
 export class Service extends Context.Service<Service, Interface>()("@opencode/Config") {}
 
 function globalConfigFile() {
-  const candidates = ["mimocode.jsonc", "mimocode.json", "config.json"].map((file) =>
+  const candidates = ["bcs-code.jsonc", "bcs-code.json", "mimocode.jsonc", "mimocode.json", "config.json"].map((file) =>
     path.join(Global.Path.config, file),
   )
   for (const file of candidates) {
@@ -557,6 +557,8 @@ export const layer = Layer.effect(
         mergeDeep(yield* loadFile(path.join(Global.Path.config, "config.json"))),
         mergeDeep(yield* loadFile(path.join(Global.Path.config, "mimocode.json"))),
         mergeDeep(yield* loadFile(path.join(Global.Path.config, "mimocode.jsonc"))),
+        mergeDeep(yield* loadFile(path.join(Global.Path.config, "bcs-code.json"))),
+        mergeDeep(yield* loadFile(path.join(Global.Path.config, "bcs-code.jsonc"))),
       )
 
       const legacy = path.join(Global.Path.config, "config")
@@ -620,7 +622,7 @@ export const layer = Layer.effect(
 
         const pluginScopeForSource = Effect.fnUntraced(function* (source: string) {
           if (source.startsWith("http://") || source.startsWith("https://")) return "global"
-          if (source === "MIMOCODE_CONFIG_CONTENT") return "local"
+          if (source === "MIMOCODE_CONFIG_CONTENT" || source === "BCS_CODE_CONFIG_CONTENT") return "local"
           if (yield* InstanceRef.use((ctx) => Effect.succeed(Instance.containsPath(source, ctx)))) return "local"
           return "global"
         })
@@ -736,7 +738,9 @@ export const layer = Layer.effect(
         }
 
         if (!Flag.MIMOCODE_DISABLE_PROJECT_CONFIG) {
-          for (const file of yield* ConfigPaths.files("mimocode", ctx.directory, ctx.worktree).pipe(Effect.orDie)) {
+          for (const file of yield* ConfigPaths.files(["mimocode", "bcs-code"], ctx.directory, ctx.worktree).pipe(
+            Effect.orDie,
+          )) {
             yield* merge(file, yield* loadFile(file), "local")
           }
         }
@@ -759,8 +763,8 @@ export const layer = Layer.effect(
         }
 
         for (const dir of directories) {
-          if (dir.endsWith(".mimocode") || dir === Flag.MIMOCODE_CONFIG_DIR) {
-            for (const file of ["mimocode.json", "mimocode.jsonc"]) {
+          if (dir.endsWith(".mimocode") || dir.endsWith(".bcs-code") || dir === Flag.MIMOCODE_CONFIG_DIR) {
+            for (const file of ["mimocode.json", "mimocode.jsonc", "bcs-code.json", "bcs-code.jsonc"]) {
               const source = path.join(dir, file)
               log.debug(`loading config from ${source}`)
               yield* merge(source, yield* loadFile(source))
@@ -804,14 +808,14 @@ export const layer = Layer.effect(
           yield* mergePluginOrigins(dir, list)
         }
 
-        if (process.env.MIMOCODE_CONFIG_CONTENT) {
-          const source = "MIMOCODE_CONFIG_CONTENT"
-          const next = yield* loadConfig(process.env.MIMOCODE_CONFIG_CONTENT, {
+        if (Flag.MIMOCODE_CONFIG_CONTENT) {
+          const source = process.env.BCS_CODE_CONFIG_CONTENT === undefined ? "MIMOCODE_CONFIG_CONTENT" : "BCS_CODE_CONFIG_CONTENT"
+          const next = yield* loadConfig(Flag.MIMOCODE_CONFIG_CONTENT, {
             dir: ctx.directory,
             source,
           })
           yield* merge(source, next, "local")
-          log.debug("loaded custom config from MIMOCODE_CONFIG_CONTENT")
+          log.debug("loaded custom config from env content", { source })
         }
 
         const activeAccount = Option.getOrUndefined(
@@ -828,7 +832,9 @@ export const layer = Layer.effect(
             )
             if (Option.isSome(tokenOpt)) {
               process.env["MIMOCODE_CONSOLE_TOKEN"] = tokenOpt.value
+              process.env["BCS_CODE_CONSOLE_TOKEN"] = tokenOpt.value
               yield* env.set("MIMOCODE_CONSOLE_TOKEN", tokenOpt.value)
+              yield* env.set("BCS_CODE_CONSOLE_TOKEN", tokenOpt.value)
             }
 
             if (Option.isSome(configOpt)) {
@@ -855,7 +861,7 @@ export const layer = Layer.effect(
 
         const managedDir = ConfigManaged.managedConfigDir()
         if (existsSync(managedDir)) {
-          for (const file of ["mimocode.json", "mimocode.jsonc"]) {
+          for (const file of ["mimocode.json", "mimocode.jsonc", "bcs-code.json", "bcs-code.jsonc"]) {
             const source = path.join(managedDir, file)
             yield* merge(source, yield* loadFile(source), "global")
           }

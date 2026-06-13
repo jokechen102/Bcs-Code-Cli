@@ -1,17 +1,34 @@
 import { Config } from "effect"
 
+const ENV_ALIASES: Record<string, string> = {
+  MIMOCODE_MIMO_ONLY: "BCS_CODE_BCS_CODE_ONLY",
+}
+
+function bcsAlias(key: string) {
+  if (ENV_ALIASES[key]) return ENV_ALIASES[key]
+  if (key.startsWith("MIMOCODE_")) return `BCS_CODE_${key.slice("MIMOCODE_".length)}`
+  return key
+}
+
+function env(key: string) {
+  const branded = bcsAlias(key)
+  const value = process.env[branded] ?? process.env[key]
+  if (value !== undefined && branded !== key) process.env[key] = value
+  return value
+}
+
 function truthy(key: string) {
-  const value = process.env[key]?.toLowerCase()
+  const value = env(key)?.toLowerCase()
   return value === "true" || value === "1"
 }
 
 function falsy(key: string) {
-  const value = process.env[key]?.toLowerCase()
+  const value = env(key)?.toLowerCase()
   return value === "false" || value === "0"
 }
 
 function number(key: string) {
-  const value = process.env[key]
+  const value = env(key)
   if (!value) return undefined
   const parsed = Number(value)
   return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined
@@ -32,7 +49,7 @@ const MIMOCODE_DISABLE_CLAUDE_CODE = MIMOCODE_MIMO_ONLY || MIMOCODE_DISABLE_CLAU
 const MIMOCODE_DISABLE_EXTERNAL_SKILLS = truthy("MIMOCODE_DISABLE_EXTERNAL_SKILLS")
 const MIMOCODE_DISABLE_CLAUDE_CODE_SKILLS =
   MIMOCODE_DISABLE_EXTERNAL_SKILLS || MIMOCODE_DISABLE_CLAUDE_CODE || truthy("MIMOCODE_DISABLE_CLAUDE_CODE_SKILLS")
-const copy = process.env["MIMOCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT"]
+const copy = env("MIMOCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT")
 
 export const Flag = {
   OTEL_EXPORTER_OTLP_ENDPOINT: process.env["OTEL_EXPORTER_OTLP_ENDPOINT"],
@@ -40,9 +57,10 @@ export const Flag = {
 
   MIMOCODE_AUTO_SHARE: truthy("MIMOCODE_AUTO_SHARE"),
   MIMOCODE_AUTO_HEAP_SNAPSHOT: truthy("MIMOCODE_AUTO_HEAP_SNAPSHOT"),
-  MIMOCODE_GIT_BASH_PATH: process.env["MIMOCODE_GIT_BASH_PATH"],
-  MIMOCODE_CONFIG: process.env["MIMOCODE_CONFIG"],
-  MIMOCODE_CONFIG_CONTENT: process.env["MIMOCODE_CONFIG_CONTENT"],
+  MIMOCODE_AUTH_CONTENT: env("MIMOCODE_AUTH_CONTENT"),
+  MIMOCODE_GIT_BASH_PATH: env("MIMOCODE_GIT_BASH_PATH"),
+  MIMOCODE_CONFIG: env("MIMOCODE_CONFIG"),
+  MIMOCODE_CONFIG_CONTENT: env("MIMOCODE_CONFIG_CONTENT"),
 
   MIMOCODE_DISABLE_AUTOUPDATE: truthy("MIMOCODE_DISABLE_AUTOUPDATE"),
 
@@ -53,13 +71,14 @@ export const Flag = {
   MIMOCODE_DISABLE_PRUNE: truthy("MIMOCODE_DISABLE_PRUNE"),
   MIMOCODE_DISABLE_TERMINAL_TITLE: truthy("MIMOCODE_DISABLE_TERMINAL_TITLE"),
   MIMOCODE_SHOW_TTFD: truthy("MIMOCODE_SHOW_TTFD"),
-  MIMOCODE_PERMISSION: process.env["MIMOCODE_PERMISSION"],
+  MIMOCODE_PERMISSION: env("MIMOCODE_PERMISSION"),
   MIMOCODE_DISABLE_DEFAULT_PLUGINS: truthy("MIMOCODE_DISABLE_DEFAULT_PLUGINS"),
   MIMOCODE_DISABLE_LSP_DOWNLOAD: truthy("MIMOCODE_DISABLE_LSP_DOWNLOAD"),
   MIMOCODE_ENABLE_EXPERIMENTAL_MODELS: truthy("MIMOCODE_ENABLE_EXPERIMENTAL_MODELS"),
   MIMOCODE_DISABLE_AUTOCOMPACT: truthy("MIMOCODE_DISABLE_AUTOCOMPACT"),
   MIMOCODE_DISABLE_MODELS_FETCH: truthy("MIMOCODE_DISABLE_MODELS_FETCH"),
   MIMOCODE_DISABLE_MOUSE: truthy("MIMOCODE_DISABLE_MOUSE"),
+  MIMOCODE_DISABLE_SHARE: truthy("MIMOCODE_DISABLE_SHARE"),
   MIMOCODE_OUTPUT_LENGTH_CONTINUATION_LIMIT: number("MIMOCODE_OUTPUT_LENGTH_CONTINUATION_LIMIT") ?? 3,
   MIMOCODE_INVALID_OUTPUT_CONTINUATION_LIMIT: number("MIMOCODE_INVALID_OUTPUT_CONTINUATION_LIMIT") ?? 2,
 
@@ -86,7 +105,7 @@ export const Flag = {
   MIMOCODE_DISABLE_EXTERNAL_SKILLS,
   MIMOCODE_DISABLE_CODEX_SKILLS: MIMOCODE_DISABLE_EXTERNAL_SKILLS || truthy("MIMOCODE_DISABLE_CODEX_SKILLS"),
   MIMOCODE_DISABLE_OPENCODE_SKILLS: MIMOCODE_DISABLE_EXTERNAL_SKILLS || truthy("MIMOCODE_DISABLE_OPENCODE_SKILLS"),
-  MIMOCODE_FAKE_VCS: process.env["MIMOCODE_FAKE_VCS"],
+  MIMOCODE_FAKE_VCS: env("MIMOCODE_FAKE_VCS"),
 
   // When enabled, skips all git subprocess calls during project discovery
   // (which git, rev-parse --git-common-dir, rev-parse --show-toplevel) and
@@ -94,18 +113,14 @@ export const Flag = {
   // the working directory. Use to avoid touching git in restricted/sandboxed
   // environments or where git startup probing is undesirable.
   MIMOCODE_DISABLE_GIT: truthy("MIMOCODE_DISABLE_GIT"),
-  MIMOCODE_SERVER_PASSWORD: process.env["MIMOCODE_SERVER_PASSWORD"],
-  MIMOCODE_SERVER_USERNAME: process.env["MIMOCODE_SERVER_USERNAME"],
+  MIMOCODE_SERVER_PASSWORD: env("MIMOCODE_SERVER_PASSWORD"),
+  MIMOCODE_SERVER_USERNAME: env("MIMOCODE_SERVER_USERNAME"),
   MIMOCODE_ENABLE_QUESTION_TOOL: truthy("MIMOCODE_ENABLE_QUESTION_TOOL"),
 
   // Experimental
   MIMOCODE_EXPERIMENTAL,
-  MIMOCODE_EXPERIMENTAL_FILEWATCHER: Config.boolean("MIMOCODE_EXPERIMENTAL_FILEWATCHER").pipe(
-    Config.withDefault(false),
-  ),
-  MIMOCODE_EXPERIMENTAL_DISABLE_FILEWATCHER: Config.boolean("MIMOCODE_EXPERIMENTAL_DISABLE_FILEWATCHER").pipe(
-    Config.withDefault(false),
-  ),
+  MIMOCODE_EXPERIMENTAL_FILEWATCHER: Config.succeed(truthy("MIMOCODE_EXPERIMENTAL_FILEWATCHER")),
+  MIMOCODE_EXPERIMENTAL_DISABLE_FILEWATCHER: Config.succeed(truthy("MIMOCODE_EXPERIMENTAL_DISABLE_FILEWATCHER")),
   MIMOCODE_EXPERIMENTAL_ICON_DISCOVERY: MIMOCODE_EXPERIMENTAL || truthy("MIMOCODE_EXPERIMENTAL_ICON_DISCOVERY"),
   MIMOCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT:
     copy === undefined ? process.platform === "win32" : truthy("MIMOCODE_EXPERIMENTAL_DISABLE_COPY_ON_SELECT"),
@@ -113,14 +128,15 @@ export const Flag = {
   MIMOCODE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS: number("MIMOCODE_EXPERIMENTAL_BASH_DEFAULT_TIMEOUT_MS"),
   MIMOCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX: number("MIMOCODE_EXPERIMENTAL_OUTPUT_TOKEN_MAX"),
   MIMOCODE_EXPERIMENTAL_OXFMT: MIMOCODE_EXPERIMENTAL || truthy("MIMOCODE_EXPERIMENTAL_OXFMT"),
+  MIMOCODE_FAST_BOOT: truthy("MIMOCODE_FAST_BOOT"),
   MIMOCODE_EXPERIMENTAL_LSP_TY: truthy("MIMOCODE_EXPERIMENTAL_LSP_TY"),
   MIMOCODE_EXPERIMENTAL_LSP_TOOL: MIMOCODE_EXPERIMENTAL || truthy("MIMOCODE_EXPERIMENTAL_LSP_TOOL"),
   MIMOCODE_EXPERIMENTAL_WORKFLOW_TOOL: MIMOCODE_EXPERIMENTAL || truthy("MIMOCODE_EXPERIMENTAL_WORKFLOW_TOOL"),
   MIMOCODE_EXPERIMENTAL_MARKDOWN: !falsy("MIMOCODE_EXPERIMENTAL_MARKDOWN"),
-  MIMOCODE_MODELS_URL: process.env["MIMOCODE_MODELS_URL"],
-  MIMOCODE_MODELS_PATH: process.env["MIMOCODE_MODELS_PATH"],
+  MIMOCODE_MODELS_URL: env("MIMOCODE_MODELS_URL"),
+  MIMOCODE_MODELS_PATH: env("MIMOCODE_MODELS_PATH"),
   MIMOCODE_DISABLE_EMBEDDED_WEB_UI: truthy("MIMOCODE_DISABLE_EMBEDDED_WEB_UI"),
-  MIMOCODE_DB: process.env["MIMOCODE_DB"],
+  MIMOCODE_DB: env("MIMOCODE_DB"),
 
   // Defaults to true — all channels share a single mimocode.db. The per-channel
   // DB isolation (mimocode-{channel}.db) is unnecessary for mimocode since we
@@ -131,7 +147,7 @@ export const Flag = {
   MIMOCODE_SKIP_MIGRATIONS: truthy("MIMOCODE_SKIP_MIGRATIONS"),
   MIMOCODE_STRICT_CONFIG_DEPS: truthy("MIMOCODE_STRICT_CONFIG_DEPS"),
 
-  MIMOCODE_WORKSPACE_ID: process.env["MIMOCODE_WORKSPACE_ID"],
+  MIMOCODE_WORKSPACE_ID: env("MIMOCODE_WORKSPACE_ID"),
   MIMOCODE_EXPERIMENTAL_HTTPAPI: truthy("MIMOCODE_EXPERIMENTAL_HTTPAPI"),
   MIMOCODE_EXPERIMENTAL_WORKSPACES: MIMOCODE_EXPERIMENTAL || truthy("MIMOCODE_EXPERIMENTAL_WORKSPACES"),
 
@@ -144,21 +160,21 @@ export const Flag = {
     return truthy("MIMOCODE_DISABLE_PROJECT_CONFIG")
   },
   get MIMOCODE_TUI_CONFIG() {
-    return process.env["MIMOCODE_TUI_CONFIG"]
+    return env("MIMOCODE_TUI_CONFIG")
   },
   get MIMOCODE_CONFIG_DIR() {
-    return process.env["MIMOCODE_CONFIG_DIR"]
+    return env("MIMOCODE_CONFIG_DIR")
   },
   get MIMOCODE_HOME() {
-    return process.env["MIMOCODE_HOME"]
+    return env("MIMOCODE_HOME")
   },
   get MIMOCODE_PURE() {
     return truthy("MIMOCODE_PURE")
   },
   get MIMOCODE_PLUGIN_META_FILE() {
-    return process.env["MIMOCODE_PLUGIN_META_FILE"]
+    return env("MIMOCODE_PLUGIN_META_FILE")
   },
   get MIMOCODE_CLIENT() {
-    return process.env["MIMOCODE_CLIENT"] ?? "cli"
+    return env("MIMOCODE_CLIENT") ?? "cli"
   },
 }
