@@ -74,10 +74,11 @@ import { DialogVariant } from "./component/dialog-variant"
 
 function rendererConfig(_config: TuiConfig.Info, plainTerminal: boolean): CliRendererConfig {
   const mouseEnabled = !plainTerminal && !Flag.MIMOCODE_DISABLE_MOUSE && (_config.mouse ?? true)
+  const fps = Flag.MIMOCODE_TUI_FPS ?? (plainTerminal ? 10 : 60)
 
   return {
     externalOutputMode: "passthrough",
-    targetFps: plainTerminal ? 10 : 60,
+    targetFps: fps,
     gatherStats: false,
     exitOnCtrlC: false,
     useKittyKeyboard: plainTerminal ? null : {},
@@ -87,13 +88,13 @@ function rendererConfig(_config: TuiConfig.Info, plainTerminal: boolean): CliRen
     useMouse: mouseEnabled,
     ...(plainTerminal
       ? {
-          maxFps: 15,
+          maxFps: fps,
           screenMode: "main-screen" as const,
           useThread: false,
           backgroundColor: "transparent",
         }
       : {
-          maxFps: 60,
+          maxFps: fps,
         }),
     consoleOptions: {
       keyBindings: [{ name: "y", ctrl: true, action: "copy-selection" }],

@@ -635,7 +635,8 @@ export function Logo(props: { shape?: LogoShape; ink?: RGBA; idle?: boolean; swe
 
   const start = () => {
     if (timer) return
-    timer = setInterval(tick, 16)
+    const fps = Flag.MIMOCODE_TUI_FPS ?? 60
+    timer = setInterval(tick, Math.round(1000 / fps))
   }
 
   onCleanup(() => {
