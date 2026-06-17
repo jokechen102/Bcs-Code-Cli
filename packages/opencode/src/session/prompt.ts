@@ -108,6 +108,25 @@ const MAX_GOAL_REACT = 12
  */
 const REPEATED_STEP_THRESHOLD = 3
 
+function summarizePartsForLog(parts: MessageV2.Part[]): string[] {
+  return parts.map((part) => {
+    if (part.type === "text") {
+      const markers = [part.synthetic ? "synthetic" : "", part.ignored ? "ignored" : ""]
+        .filter(Boolean)
+        .join("|")
+      return `text#${part.id}:len=${part.text.length}${markers ? ` (${markers})` : ""}`
+    }
+    if (part.type === "reasoning") return `reasoning#${part.id}:len=${part.text.length}`
+    if (part.type === "tool") return `tool#${part.id}:${part.tool}`
+    if (part.type === "step-start") return `step-start#${part.id}`
+    if (part.type === "step-finish") return `step-finish#${part.id}`
+    if (part.type === "patch") return `patch#${part.id}`
+    if (part.type === "snapshot") return `snapshot#${part.id}`
+    if (part.type === "agent") return `agent#${part.id}`
+    return `${part.type}#${part.id}`
+  })
+}
+
 /**
  * Deterministic JSON serialization with sorted object keys, so that two
  * semantically-identical tool inputs produce the same string regardless of the
@@ -2215,6 +2234,16 @@ NOTE: At any point in time through this workflow you should feel free to ask the
               assistant: lastAssistant,
               parts: lastAssistantMsg?.parts ?? [],
             })
+            if (Flag.MIMOCODE_TRACE_LLM_STREAM) {
+              slog.debug("existing-assistant classification", {
+                phase: "existing-assistant",
+                assistantID: lastAssistant.id,
+                reason: classification.type,
+                detail: classification.type === "invalid" || classification.type === "think-only" ? classification : undefined,
+                finish: lastAssistant.finish,
+                partSummary: summarizePartsForLog(lastAssistantMsg?.parts ?? []),
+              })
+            }
             if (classification.type === "filtered") {
               yield* writeContentFilterError({ assistant: lastAssistant })
               yield* slog.info("exiting loop", { classification: classification.type })
@@ -2678,13 +2707,33 @@ NOTE: At any point in time through this workflow you should feel free to ask the
                 return "break" as const
               }
 
+              const forkParts = MessageV2.parts(handle.message.id)
+              if (Flag.MIMOCODE_TRACE_LLM_STREAM) {
+                slog.debug("after-process classify inputs", {
+                  phase: "fork-after-process",
+                  assistantID: handle.message.id,
+                  processResult: result,
+                  finish: handle.message.finish,
+                  partSummary: summarizePartsForLog(forkParts),
+                })
+              }
+
               const forkClassification = classifyAssistantStep({
                 phase: "after-process",
                 lastUser,
                 assistant: handle.message,
-                parts: MessageV2.parts(handle.message.id),
+                parts: forkParts,
                 processResult: result,
               })
+              if (Flag.MIMOCODE_TRACE_LLM_STREAM) {
+                slog.debug("fork after-process classification", {
+                  phase: "fork-after-process",
+                  assistantID: handle.message.id,
+                  type: forkClassification.type,
+                  reason: forkClassification.type === "invalid" ? forkClassification.reason : undefined,
+                  finish: handle.message.finish,
+                })
+              }
               if (forkClassification.type === "filtered") {
                 yield* writeContentFilterError({ assistant: handle.message })
                 return "break" as const
@@ -2821,13 +2870,32 @@ NOTE: At any point in time through this workflow you should feel free to ask the
               return "break" as const
             }
 
+            const processParts = MessageV2.parts(handle.message.id)
+            if (Flag.MIMOCODE_TRACE_LLM_STREAM) {
+              slog.debug("after-process classify inputs", {
+                phase: "after-process",
+                assistantID: handle.message.id,
+                processResult: result,
+                finish: handle.message.finish,
+                partSummary: summarizePartsForLog(processParts),
+              })
+            }
+
             const classification = classifyAssistantStep({
               phase: "after-process",
               lastUser,
               assistant: handle.message,
-              parts: MessageV2.parts(handle.message.id),
+              parts: processParts,
               processResult: result,
             })
+            if (Flag.MIMOCODE_TRACE_LLM_STREAM) {
+              slog.debug("after-process classification", {
+                phase: "after-process",
+                assistantID: handle.message.id,
+                type: classification.type,
+                reason: classification.type === "invalid" ? classification.reason : undefined,
+              })
+            }
             if (classification.type === "filtered") {
               yield* writeContentFilterError({ assistant: handle.message })
               return "break" as const

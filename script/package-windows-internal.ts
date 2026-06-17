@@ -20,6 +20,7 @@ const smallBaseURL =
   process.env.BCS_CODE_SMALL_BASE_URL ?? "http://100.115.100.130:30279/8a620da96ee846738ddc72414be2c712/v1"
 const model = process.env.BCS_CODE_MODEL ?? process.env.BCS_CODE_FULL_MODEL ?? "dsv4"
 const smallModel = process.env.BCS_CODE_SMALL_MODEL ?? "Qwen-3.6-27B"
+const autoInstallWezTerm = process.env.BCS_CODE_AUTO_INSTALL_WEZTERM === "1"
 
 process.chdir(root)
 
@@ -75,6 +76,7 @@ await Bun.write(
       outputWindow: Number(process.env.BCS_CODE_OUTPUT_WINDOW ?? 8192),
       smallContextWindow: Number(process.env.BCS_CODE_SMALL_CONTEXT_WINDOW ?? process.env.BCS_CODE_CONTEXT_WINDOW ?? 262144),
       smallOutputWindow: Number(process.env.BCS_CODE_SMALL_OUTPUT_WINDOW ?? process.env.BCS_CODE_OUTPUT_WINDOW ?? 8192),
+      autoInstallWezTerm,
     },
     null,
     2,

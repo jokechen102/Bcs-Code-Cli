@@ -29,6 +29,37 @@ import { type OpenAICompatibleChatModelId, openaiCompatibleProviderOptions } fro
 import { defaultOpenAICompatibleErrorStructure, type ProviderErrorStructure } from "../openai-compatible-error"
 import type { MetadataExtractor } from "./openai-compatible-metadata-extractor"
 import { prepareTools } from "./openai-compatible-prepare-tools"
+import { type OpenAICompatibleChatPrompt } from "./openai-compatible-api-types"
+
+function ensureSingleSystemMessage(messages: OpenAICompatibleChatPrompt): OpenAICompatibleChatPrompt {
+  const systemMessages = messages.filter((message) => message.role === "system")
+  if (systemMessages.length <= 1) return messages
+
+  const mergedContent = systemMessages
+    .map((message) => {
+      if (typeof message.content === "string") return message.content
+      return message.content
+        .map((part) => {
+          if (part.type === "text") return part.text
+          return ""
+        })
+        .filter(Boolean)
+        .join("")
+    })
+    .filter(Boolean)
+    .join("\n")
+
+  const { role: _role, content: _content, ...rest } = systemMessages[0] as Record<string, unknown>
+
+  return [
+    {
+      role: "system",
+      content: mergedContent,
+      ...rest,
+    },
+    ...messages.filter((message) => message.role !== "system"),
+  ]
+}
 
 export type OpenAICompatibleChatConfig = {
   provider: string
@@ -176,7 +207,7 @@ export class OpenAICompatibleChatLanguageModel implements LanguageModelV3 {
         verbosity: compatibleOptions.textVerbosity,
 
         // messages:
-        messages: convertToOpenAICompatibleChatMessages(prompt),
+        messages: ensureSingleSystemMessage(convertToOpenAICompatibleChatMessages(prompt)),
 
         // tools:
         tools: openaiTools,
@@ -495,7 +526,7 @@ export class OpenAICompatibleChatLanguageModel implements LanguageModelV3 {
               })
             }
 
-            if (delta.content) {
+            if (delta.content != null) {
               // If reasoning was active and we're starting text, end reasoning first
               // This handles the case where reasoning_opaque and content come in the same chunk
               if (isActiveReasoning && !isActiveText) {

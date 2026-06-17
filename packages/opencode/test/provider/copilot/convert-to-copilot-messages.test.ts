@@ -17,6 +17,78 @@ describe("system messages", () => {
       },
     ])
   })
+
+  test("should merge system messages into one front system prompt", () => {
+    const result = convertToCopilotMessages([
+      {
+        role: "user",
+        content: [{ type: "text", text: "hello" }],
+      },
+      {
+        role: "system",
+        content: "Override previous context",
+      },
+      {
+        role: "assistant",
+        content: [{ type: "text", text: "hi" }],
+      },
+      {
+        role: "system",
+        content: "Apply safety policy",
+      },
+    ])
+
+    expect(result).toEqual([
+      {
+        role: "system",
+        content: "Override previous context\nApply safety policy",
+      },
+      {
+        role: "user",
+        content: "hello",
+      },
+      {
+        role: "assistant",
+        content: "hi",
+      },
+    ])
+  })
+
+  test("should merge system and developer messages into one system prompt", () => {
+    const result = convertToCopilotMessages([
+      {
+        role: "user",
+        content: [{ type: "text", text: "hello" }],
+      },
+      {
+        role: "developer" as any,
+        content: "Apply safety guidance",
+      },
+      {
+        role: "system",
+        content: "Override previous context",
+      },
+      {
+        role: "assistant",
+        content: [{ type: "text", text: "hi" }],
+      },
+    ])
+
+    expect(result).toEqual([
+      {
+        role: "system",
+        content: "Apply safety guidance\nOverride previous context",
+      },
+      {
+        role: "user",
+        content: "hello",
+      },
+      {
+        role: "assistant",
+        content: "hi",
+      },
+    ])
+  })
 })
 
 describe("user messages", () => {

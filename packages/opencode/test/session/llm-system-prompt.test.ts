@@ -191,6 +191,67 @@ describe("session.llm system prompt — memory-instructions guard", () => {
     })
   })
 
+  test("non-workflow provider request normalizes system messages to a single leading entry", async () => {
+    const server = queueState.server!
+    const providerID = "alibaba"
+    const modelID = "qwen-plus"
+    const fixture = await loadFixture(providerID, modelID)
+    const request = waitRequest(
+      "/chat/completions",
+      new Response(createChatStream("Hi"), { status: 200, headers: { "Content-Type": "text/event-stream" } }),
+    )
+
+    await using tmp = await tmpdir({
+      init: async (dir) => {
+        await Bun.write(path.join(dir, "mimocode.json"), tmpConfig(providerID, `${server.url.origin}/v1`))
+      },
+    })
+
+    await Instance.provide({
+      directory: tmp.path,
+      fn: async () => {
+        const resolved = await getModel(ProviderID.make(providerID), ModelID.make(fixture.model.id))
+        const sessionRt = ManagedRuntime.make(SessionNs.defaultLayer)
+        let sessionID: SessionID
+        try {
+          const info = await sessionRt.runPromise(SessionNs.Service.use((svc) => svc.create({})))
+          sessionID = info.id
+        } finally {
+          await sessionRt.dispose()
+        }
+        const rt = ManagedRuntime.make(Layer.mergeAll(LLM.defaultLayer))
+        try {
+          await rt.runPromise(
+            LLM.Service.use((svc) =>
+              svc
+                .stream({
+                  user: makeBaseUser(sessionID, providerID, resolved.id),
+                  sessionID,
+                  model: resolved,
+                  agent: makeAgent(),
+                  system: ["You are a helpful assistant."],
+                  messages: [
+                    { role: "system", content: "legacy prompt fragment in message history" },
+                    { role: "user", content: "Hello" },
+                  ],
+                  tools: {},
+                })
+                .pipe(Stream.runDrain),
+            ),
+          )
+        } finally {
+          await rt.dispose()
+        }
+        const capture = await request
+        const messages = capture.body.messages as Array<{ role: string; content: string }>
+        const systemRoles = messages.filter((m) => m.role === "system")
+        expect(systemRoles).toHaveLength(1)
+        expect(messages[0].role).toBe("system")
+        expect(messages[1].role).toBe("user")
+      },
+    })
+  })
+
   test("system-spawned actor — '# Memory system' is NOT appended", async () => {
     const server = queueState.server!
     const providerID = "alibaba"

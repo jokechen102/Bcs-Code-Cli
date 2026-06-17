@@ -1,7 +1,5 @@
 param(
   [string]$InstallRoot = "$env:LOCALAPPDATA\Programs\BCS Code",
-  [string]$WezTermRoot = "$env:LOCALAPPDATA\Programs\BCS Code\wezterm",
-  [switch]$SkipShortcut,
   [switch]$SkipPath
 )
 
@@ -31,20 +29,6 @@ function Add-UserPath($PathToAdd) {
   $env:Path = (($env:Path.Split(";") + $PathToAdd) | Where-Object { $_ -and $_.Trim() } | Select-Object -Unique) -join ";"
 }
 
-function Remove-DirectoryBestEffort($PathToRemove) {
-  if (!(Test-Path $PathToRemove)) {
-    return
-  }
-  foreach ($attempt in 1..3) {
-    Remove-Item $PathToRemove -Recurse -Force -ErrorAction SilentlyContinue
-    if (!(Test-Path $PathToRemove)) {
-      return
-    }
-    Start-Sleep -Milliseconds (250 * $attempt)
-  }
-  Write-Warning "Could not remove temporary directory: $PathToRemove. You can delete it later."
-}
-
 function Read-Settings($PackageRoot) {
   $settingsPath = Join-Path $PackageRoot "config\install-settings.json"
   if (!(Test-Path $settingsPath)) {
@@ -62,31 +46,13 @@ function Read-Settings($PackageRoot) {
   if (!$settings.model) {
     throw "config\install-settings.json must define model."
   }
+
+  if ($null -eq $settings.autoInstallWezTerm) {
+    $settings | Add-Member -NotePropertyName autoInstallWezTerm -NotePropertyValue $true
+  } else {
+    $settings.autoInstallWezTerm = [bool]$settings.autoInstallWezTerm
+  }
   return $settings
-}
-
-function Install-WezTerm($PackageRoot) {
-  $zip = Get-ChildItem (Join-Path $PackageRoot "payload\wezterm") -Filter "WezTerm-windows-*.zip" | Select-Object -First 1
-  if (!$zip) {
-    throw "Missing WezTerm Windows zip under payload\wezterm."
-  }
-
-  Write-Step "Installing WezTerm from $($zip.Name)"
-  $temp = Join-Path $env:TEMP ("bcs-code-wezterm-" + [guid]::NewGuid().ToString("N"))
-  New-Item -ItemType Directory -Path $temp -Force | Out-Null
-  Expand-Archive -Path $zip.FullName -DestinationPath $temp -Force
-  $weztermExe = Get-ChildItem $temp -Recurse -Filter "wezterm.exe" | Select-Object -First 1
-  if (!$weztermExe) {
-    throw "WezTerm archive did not contain wezterm.exe."
-  }
-
-  if (Test-Path $WezTermRoot) {
-    Remove-Item $WezTermRoot -Recurse -Force
-  }
-  New-Item -ItemType Directory -Path $WezTermRoot -Force | Out-Null
-  Copy-Item (Join-Path $weztermExe.DirectoryName "*") $WezTermRoot -Recurse -Force
-  Remove-DirectoryBestEffort $temp
-  return Join-Path $WezTermRoot "wezterm.exe"
 }
 
 function Install-BcsCode($PackageRoot) {
@@ -102,10 +68,36 @@ function Install-BcsCode($PackageRoot) {
   return Join-Path $bin "bcs-code.exe"
 }
 
+function Print-WezTermNotice($PackageRoot) {
+  $zip = Get-ChildItem (Join-Path $PackageRoot "payload\wezterm") -Filter "WezTerm-windows-*.zip" | Select-Object -First 1
+  if ($zip) {
+    Write-Step "WezTerm package is included for manual install: $($zip.Name)"
+    Write-Host "If you want GUI launch, extract payload\wezterm\$($zip.Name) manually and point to wezterm.exe."
+    Write-Host "The default installer in this package only installs bcs-code.exe."
+  }
+}
+
+function Resolve-ConfigDirectory() {
+  if ($env:BCS_CODE_HOME) {
+    return Join-Path $env:BCS_CODE_HOME "config"
+  }
+  if ($env:MIMOCODE_HOME) {
+    return Join-Path $env:MIMOCODE_HOME "config"
+  }
+  if ($env:XDG_CONFIG_HOME) {
+    return Join-Path $env:XDG_CONFIG_HOME "mimocode"
+  }
+  if ($env:APPDATA) {
+    return Join-Path $env:APPDATA ".config\mimocode"
+  }
+  return Join-Path $env:USERPROFILE "AppData\Roaming\.config\mimocode"
+}
+
 function Write-BcsConfig($Settings) {
   Write-Step "Writing BCS Code model configuration"
-  $configDir = Join-Path $env:USERPROFILE ".config\mimocode"
+  $configDir = Resolve-ConfigDirectory
   New-Item -ItemType Directory -Path $configDir -Force | Out-Null
+  Write-Step "Config directory: $configDir"
 
   function ConvertFrom-SecureStringPlainText($Secure) {
     $ptr = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($Secure)
@@ -120,7 +112,12 @@ function Write-BcsConfig($Settings) {
     return [ordered]@{
       name = $Name
       tool_call = $true
+      attachment = $true
       reasoning = [bool]$Reasoning
+      modalities = [ordered]@{
+        input = @("text", "image")
+        output = @("text")
+      }
       limit = [ordered]@{
         context = [int]$ContextWindow
         output = [int]$OutputWindow
@@ -227,134 +224,19 @@ function Write-BcsConfig($Settings) {
   $env:MIMOCODE_DISABLE_MODELS_FETCH = "1"
 }
 
-function Write-Launchers($WezTermExe, $BcsCodeExe, $Settings) {
-  Write-Step "Writing launchers"
-  $launcher = Join-Path $InstallRoot "Start-BCS-Code.ps1"
-  $wezConfig = Join-Path $InstallRoot "wezterm.lua"
-  New-Item -ItemType Directory -Path $InstallRoot -Force | Out-Null
-  $fullEnvKey = if ($Settings.fullApiKeyEnv) { $Settings.fullApiKeyEnv } else { "BCS_CODE_FULL_API_KEY" }
-  $smallEnvKey = if ($Settings.smallApiKeyEnv) { $Settings.smallApiKeyEnv } else { "BCS_CODE_SMALL_API_KEY" }
-  $wezTermAvailable = $WezTermExe -and (Test-Path $WezTermExe)
-
-  function ConvertTo-PowerShellLiteral($Value) {
-    return "'" + ([string]$Value).Replace("'", "''") + "'"
-  }
-
-  if ($wezTermAvailable) {
-    @"
-local wezterm = require 'wezterm'
-
-return {
-  font_size = 12.0,
-  hide_tab_bar_if_only_one_tab = true,
-  window_close_confirmation = 'NeverPrompt',
-  front_end = 'Software',
-  prefer_egl = true,
-  colors = {
-    foreground = '#F4F4F6',
-    background = '#0F1013',
-    cursor_bg = '#EF3434',
-    cursor_fg = '#FFFFFF',
-    selection_bg = '#C92128',
-    selection_fg = '#FFFFFF',
-  },
-}
-"@ | Set-Content $wezConfig -Encoding UTF8
-  }
-
-  $pathPrefix = if ($wezTermAvailable) {
-    (Split-Path $BcsCodeExe -Parent) + ";" + (Split-Path $WezTermExe -Parent)
-  } else {
-    Split-Path $BcsCodeExe -Parent
-  }
-  $launchBcsCode = @(
-    "`$launcherLog = Join-Path `$PSScriptRoot 'start-bcs-code.log'",
-    'try {',
-    "  if (`$args.Count -gt 0) {",
-    "    & $(ConvertTo-PowerShellLiteral $BcsCodeExe) @args",
-    '  } else {',
-    "    & $(ConvertTo-PowerShellLiteral $BcsCodeExe)",
-    '  }',
-    '  `$exitCode = `$LASTEXITCODE',
-    '  if (`$exitCode -ne 0) {',
-    '    `$message = "BCS Code exited with code $exitCode"',
-    '    Add-Content -Path `$launcherLog -Value ((Get-Date -Format o) + " " + `$message)',
-    '    Write-Warning `$message',
-    '    Write-Warning "Check log: $launcherLog"',
-    '    [void][Console]::ReadLine()',
-    '  }',
-    '}',
-    'catch {',
-    '  `$message = "BCS Code launch failed: $($_.Exception.Message)"',
-    '  Add-Content -Path `$launcherLog -Value ((Get-Date -Format o) + " " + `$message)',
-    '  Write-Warning `$message',
-    '  Write-Warning "Check log: $launcherLog"',
-    '  [void][Console]::ReadLine()',
-    '}',
-  )
-  $startCommands = if ($wezTermAvailable) {
-    @(
-      "& $(ConvertTo-PowerShellLiteral $WezTermExe) --config-file $(ConvertTo-PowerShellLiteral $wezConfig) start --cwd `$env:USERPROFILE -- $(ConvertTo-PowerShellLiteral $BcsCodeExe)"
-      "if (`$LASTEXITCODE -ne 0) {"
-      "  Write-Warning 'WezTerm failed to start. Falling back to the console launcher.'"
-    ) + $launchBcsCode + @(
-      "}"
-    )
-  } else {
-    $launchBcsCode
-  }
-
-  (
-  @(
-    '$ErrorActionPreference = "Stop"'
-    '$env:BCS_CODE_DISABLE_MODELS_FETCH = "1"'
-    '$env:MIMOCODE_DISABLE_MODELS_FETCH = "1"'
-    "`$fullApiKey = [Environment]::GetEnvironmentVariable($(ConvertTo-PowerShellLiteral $fullEnvKey), 'User')"
-    "if (`$fullApiKey) { [Environment]::SetEnvironmentVariable($(ConvertTo-PowerShellLiteral $fullEnvKey), `$fullApiKey, 'Process') }"
-    "`$smallApiKey = [Environment]::GetEnvironmentVariable($(ConvertTo-PowerShellLiteral $smallEnvKey), 'User')"
-    "if (`$smallApiKey) { [Environment]::SetEnvironmentVariable($(ConvertTo-PowerShellLiteral $smallEnvKey), `$smallApiKey, 'Process') }"
-    "`$env:Path = $(ConvertTo-PowerShellLiteral $pathPrefix) + ';' + `$env:Path"
-    ) + $startCommands
-  ) | Set-Content $launcher -Encoding UTF8
-
-  $cmd = Join-Path $InstallRoot "BCS Code.cmd"
-  @"
-@echo off
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%LOCALAPPDATA%\Programs\BCS Code\Start-BCS-Code.ps1" %*
-"@ | Set-Content $cmd -Encoding ASCII
-
-  if (!$SkipShortcut) {
-    $desktop = [Environment]::GetFolderPath("Desktop")
-    $startMenu = Join-Path ([Environment]::GetFolderPath("Programs")) "BCS Code"
-    New-Item -ItemType Directory -Path $startMenu -Force | Out-Null
-    foreach ($shortcutPath in @((Join-Path $desktop "BCS Code.lnk"), (Join-Path $startMenu "BCS Code.lnk"))) {
-      $shell = New-Object -ComObject WScript.Shell
-      $shortcut = $shell.CreateShortcut($shortcutPath)
-      $shortcut.TargetPath = "powershell.exe"
-      $shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$launcher`""
-      $shortcut.WorkingDirectory = $env:USERPROFILE
-      $shortcut.IconLocation = if ($wezTermAvailable) { "$WezTermExe,0" } else { "$BcsCodeExe,0" }
-      $shortcut.Save()
-    }
-  }
-}
-
 if (![Environment]::Is64BitOperatingSystem) {
   throw "This package supports Windows amd64/x64 only."
 }
 
 $packageRoot = Resolve-PackageRoot
 $settings = Read-Settings $packageRoot
-$wezTermExe = ""
-try {
-  $wezTermExe = Install-WezTerm $packageRoot
-} catch {
-  Write-Warning "WezTerm installation failed: $($_.Exception.Message)"
-  Write-Warning "Continuing with BCS Code console launcher."
+$settings.autoInstallWezTerm = [bool]$settings.autoInstallWezTerm
+if ($settings.autoInstallWezTerm) {
+  Write-Warning "autoInstallWezTerm is enabled in settings, but this installer intentionally skips automatic WezTerm installation."
 }
 $bcsCodeExe = Install-BcsCode $packageRoot
 Write-BcsConfig $settings
-Write-Launchers $wezTermExe $bcsCodeExe $settings
+Print-WezTermNotice $packageRoot
 
 if (!$SkipPath) {
   Add-UserPath (Split-Path $bcsCodeExe -Parent)
@@ -362,4 +244,4 @@ if (!$SkipPath) {
 
 Write-Step "Verifying bcs-code version"
 & $bcsCodeExe --version
-Write-Step "Installation complete. Use the BCS Code desktop shortcut or run bcs-code from a new terminal."
+Write-Step "Installation complete. Use command line: bcs-code"

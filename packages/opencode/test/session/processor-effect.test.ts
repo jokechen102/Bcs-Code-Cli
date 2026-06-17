@@ -318,6 +318,91 @@ it.live("session.processor effect tests preserve text start time", () =>
   ),
 )
 
+it.live("session.processor effect tests handle leading empty text delta from OpenAI-compatible", () =>
+  provideTmpdirServer(
+    ({ dir, llm }) =>
+      Effect.gen(function* () {
+        const { processors, session, provider } = yield* boot()
+
+        yield* llm.push(
+          raw({
+            head: [
+              {
+                id: "chatcmpl-test",
+                object: "chat.completion.chunk",
+                choices: [
+                  {
+                    delta: {
+                      content: "",
+                    },
+                    index: 0,
+                  },
+                ],
+              },
+              {
+                id: "chatcmpl-test",
+                object: "chat.completion.chunk",
+                choices: [
+                  {
+                    delta: {
+                      content: "图片",
+                      role: null,
+                    },
+                    index: 0,
+                  },
+                ],
+              },
+            ],
+            tail: [
+              {
+                id: "chatcmpl-test",
+                object: "chat.completion.chunk",
+                choices: [{
+                  index: 0,
+                  finish_reason: "stop",
+                  delta: {},
+                }],
+              },
+            ],
+          }),
+        )
+
+        const chat = yield* session.create({})
+        const parent = yield* user(chat.id, "empty then text")
+        const msg = yield* assistant(chat.id, parent.id, path.resolve(dir))
+        const mdl = yield* provider.getModel(ref.providerID, ref.modelID)
+        const handle = yield* processors.create({
+          assistantMessage: msg,
+          sessionID: chat.id,
+          model: mdl,
+        })
+
+        const value = yield* handle.process({
+          user: {
+            id: parent.id,
+            sessionID: chat.id,
+            role: "user",
+            time: parent.time,
+            agent: parent.agent,
+            model: { providerID: ref.providerID, modelID: ref.modelID },
+          } satisfies MessageV2.User,
+          sessionID: chat.id,
+          model: mdl,
+          agent: agent(),
+          system: [],
+          messages: [{ role: "user", content: "empty then text" }],
+          tools: {},
+        })
+
+        const parts = MessageV2.parts(msg.id)
+
+        expect(value).toBe("continue")
+        expect(parts.find((part) => part.type === "text" && part.text === "图片")).toBeDefined()
+      }),
+    { git: true, config: (url) => providerCfg(url) },
+  ),
+)
+
 it.live("session.processor effect tests stop after token overflow requests compaction", () =>
   provideTmpdirServer(
     ({ dir, llm }) =>

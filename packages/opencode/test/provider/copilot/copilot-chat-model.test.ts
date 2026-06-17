@@ -24,6 +24,13 @@ const FIXTURES = {
     `data: [DONE]`,
   ],
 
+  emptyThenText: [
+    `data: {"id":"chatcmpl-97ebfe7f2a2dc884","object":"chat.completion.chunk","created":1781617620,"model":"Qwen-3.6-27B","choices":[{"delta":{"content":"","function_call":null,"role":"assistant","tool_calls":null},"finish_reason":null,"index":0,"logprobs":null}]}`,
+    `data: {"id":"chatcmpl-97ebfe7f2a2dc884","object":"chat.completion.chunk","created":1781617620,"model":"Qwen-3.6-27B","choices":[{"delta":{"content":"图片","function_call":null,"role":null,"tool_calls":null},"finish_reason":null,"index":0,"logprobs":null,"token_ids":null}]}`,
+    `data: {"id":"chatcmpl-97ebfe7f2a2dc884","object":"chat.completion.chunk","choices":[{"finish_reason":"stop","index":0}]}`,
+    `data: [DONE]`,
+  ],
+
   reasoningWithToolCalls: [
     `data: {"choices":[{"index":0,"delta":{"content":null,"role":"assistant","reasoning_text":"**Understanding Dayzee's Purpose**\\n\\nI'm starting to get a better handle on \`dayzee\`.\\n\\n"}}],"created":1764940861,"id":"OdwyabKMI9yel7oPlbzgwQM","usage":{"completion_tokens":0,"prompt_tokens":0,"prompt_tokens_details":{"cached_tokens":0},"total_tokens":0,"reasoning_tokens":0},"model":"gemini-3-pro-preview"}`,
     `data: {"choices":[{"index":0,"delta":{"content":null,"role":"assistant","reasoning_text":"**Assessing Dayzee's Functionality**\\n\\nI've reviewed the files.\\n\\n"}}],"created":1764940862,"id":"OdwyabKMI9yel7oPlbzgwQM","usage":{"completion_tokens":0,"prompt_tokens":0,"prompt_tokens_details":{"cached_tokens":0},"total_tokens":0,"reasoning_tokens":0},"model":"gemini-3-pro-preview"}`,
@@ -122,6 +129,30 @@ describe("doStream", () => {
       { type: "text-delta", id: "txt-0", delta: "Hello" },
       { type: "text-delta", id: "txt-0", delta: " world" },
       { type: "text-delta", id: "txt-0", delta: "!" },
+      { type: "text-end", id: "txt-0" },
+      { type: "finish", finishReason: { unified: "stop" } },
+    ])
+  })
+
+  test("should handle empty first text delta then normal text delta", async () => {
+    const mockFetch = createMockFetch(FIXTURES.emptyThenText)
+    const model = createModel(mockFetch)
+
+    const { stream } = await model.doStream({
+      prompt: TEST_PROMPT,
+      includeRawChunks: false,
+    })
+
+    const parts = await convertReadableStreamToArray(stream)
+
+    const textParts = parts.filter(
+      (p) => p.type === "text-start" || p.type === "text-delta" || p.type === "text-end" || p.type === "finish",
+    )
+
+    expect(textParts).toMatchObject([
+      { type: "text-start", id: "txt-0" },
+      { type: "text-delta", id: "txt-0", delta: "" },
+      { type: "text-delta", id: "txt-0", delta: "图片" },
       { type: "text-end", id: "txt-0" },
       { type: "finish", finishReason: { unified: "stop" } },
     ])

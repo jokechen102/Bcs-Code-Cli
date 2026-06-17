@@ -21,6 +21,7 @@ import type { Provider } from "@/provider"
 import { Question } from "@/question"
 import { errorMessage } from "@/util/error"
 import { Log } from "@/util"
+import { Flag } from "@/flag/flag"
 import { isRecord } from "@/util/record"
 
 const DOOM_LOOP_THRESHOLD = 3
@@ -297,6 +298,18 @@ export const layer: Layer.Layer<
       })
 
       const handleEvent = Effect.fnUntraced(function* (value: StreamEvent) {
+        if (Flag.MIMOCODE_TRACE_LLM_STREAM) {
+          const deltaLen = value.type === "text-delta" ? value.text.length : undefined
+          const reasoningLen = value.type === "reasoning-delta" ? value.text.length : undefined
+          const hasUsage = value.type === "finish" && value.usage != null
+          slog.debug("processor stream event", {
+            type: value.type,
+            finish: value.type === "finish" ? value.finishReason : undefined,
+            deltaLen,
+            reasoningLen,
+            hasUsage,
+          })
+        }
         switch (value.type) {
           case "start":
             if (isMain) yield* status.set(ctx.sessionID, { type: "busy" })
@@ -532,6 +545,12 @@ export const layer: Layer.Layer<
           }
 
           case "text-start":
+            if (Flag.MIMOCODE_TRACE_LLM_STREAM) {
+              slog.debug("processor text-start", {
+                messageID: ctx.assistantMessage.id,
+                currentTextCount: ctx.stepPartIds.length,
+              })
+            }
             ctx.currentText = {
               id: PartID.ascending(),
               messageID: ctx.assistantMessage.id,
@@ -547,7 +566,29 @@ export const layer: Layer.Layer<
 
           case "text-delta":
             if (!ctx.firstTokenAt) ctx.firstTokenAt = Date.now()
-            if (!ctx.currentText) return
+            if (!ctx.currentText) {
+              ctx.currentText = {
+                id: PartID.ascending(),
+                messageID: ctx.assistantMessage.id,
+                sessionID: ctx.assistantMessage.sessionID,
+                type: "text",
+                text: "",
+                time: { start: Date.now() },
+                metadata: value.providerMetadata,
+              }
+              yield* session.updatePart(ctx.currentText)
+              ctx.stepPartIds.push(ctx.currentText.id)
+            }
+
+            // Defensive: some providers can emit empty deltas; keep the step
+            // alive even when this first event is effectively a marker.
+            if (value.text === "") return
+            if (Flag.MIMOCODE_TRACE_LLM_STREAM) {
+              slog.debug("processor text-delta", {
+                messageID: ctx.assistantMessage.id,
+                deltaLen: value.text.length,
+              })
+            }
             ctx.currentText.text += value.text
             if (value.providerMetadata) ctx.currentText.metadata = value.providerMetadata
             yield* session.updatePartDelta({
@@ -563,7 +604,7 @@ export const layer: Layer.Layer<
             if (!ctx.currentText) return
             // oxlint-disable-next-line no-self-assign -- reactivity trigger
             ctx.currentText.text = ctx.currentText.text
-            ctx.currentText.text = (yield* plugin.trigger(
+            const completedText = (yield* plugin.trigger(
               "experimental.text.complete",
               {
                 sessionID: ctx.sessionID,
@@ -572,11 +613,29 @@ export const layer: Layer.Layer<
               },
               { text: ctx.currentText.text },
             )).text
+            const droppedTextByPlugin = completedText.trim().length === 0 && ctx.currentText.text.trim().length > 0
+            if (droppedTextByPlugin) {
+              if (Flag.MIMOCODE_TRACE_LLM_STREAM) {
+                slog.debug("processor text-complete dropped non-empty text; restoring original", {
+                  messageID: ctx.assistantMessage.id,
+                  originalLen: ctx.currentText.text.length,
+                  completedLen: completedText.length,
+                })
+              }
+            } else {
+              ctx.currentText.text = completedText
+            }
             {
               const end = Date.now()
               ctx.currentText.time = { start: ctx.currentText.time?.start ?? end, end }
             }
             if (value.providerMetadata) ctx.currentText.metadata = value.providerMetadata
+            if (Flag.MIMOCODE_TRACE_LLM_STREAM) {
+              slog.debug("processor text-end", {
+                messageID: ctx.assistantMessage.id,
+                totalLen: ctx.currentText.text.length,
+              })
+            }
             yield* session.updatePart(ctx.currentText)
             ctx.currentText = undefined
             return

@@ -10,15 +10,59 @@ function getOpenAIMetadata(message: { providerOptions?: SharedV3ProviderOptions 
   return message?.providerOptions?.copilot ?? {}
 }
 
+/**
+ * Some OpenAI-compatible gateways require system instructions to be a single
+ * first message. Normalize by merging system/developer entries into one system
+ * message at index 0 and keeping other roles in order.
+ */
+function ensureSystemMessagesFirst(messages: OpenAICompatibleChatPrompt): OpenAICompatibleChatPrompt {
+  const systems: Array<{ content: string; metadata: Record<string, unknown> }> = []
+  const rest: OpenAICompatibleChatPrompt = []
+
+  for (const message of messages) {
+    if (message.role === "system" || (message as { role?: string }).role === "developer") {
+      const { role: _ignoredRole, content, ...metadata } = message as unknown as {
+        role: string
+        content: string | Array<{ type: string; [key: string]: unknown }>
+      } & Record<string, unknown>
+
+      if (typeof content === "string") {
+        systems.push({ content, metadata })
+      } else if (Array.isArray(content)) {
+        systems.push({
+          content: content
+            .map((part) => {
+              if (part.type === "text" && typeof part.text === "string") return part.text
+              return JSON.stringify(part)
+            })
+            .join("\n"),
+          metadata,
+        })
+      }
+      continue
+    }
+
+    rest.push(message)
+  }
+
+  if (systems.length === 0) return messages
+
+  const mergedSystemContent = systems.map((system) => system.content).filter(Boolean).join("\n")
+  const mergedSystemMetadata = systems[0]?.metadata ?? {}
+
+  return [{ role: "system", content: mergedSystemContent, ...mergedSystemMetadata }, ...rest]
+}
+
 export function convertToOpenAICompatibleChatMessages(prompt: LanguageModelV3Prompt): OpenAICompatibleChatPrompt {
   const messages: OpenAICompatibleChatPrompt = []
   for (const { role, content, ...message } of prompt) {
     const metadata = getOpenAIMetadata({ ...message })
     switch (role) {
-      case "system": {
+      case "system":
+      case "developer" as any: {
         messages.push({
           role: "system",
-          content: content,
+          content: content as string | any,
           ...metadata,
         })
         break
@@ -166,5 +210,5 @@ export function convertToOpenAICompatibleChatMessages(prompt: LanguageModelV3Pro
     }
   }
 
-  return messages
+  return ensureSystemMessagesFirst(messages)
 }

@@ -51,6 +51,84 @@ function writeConfig(dir: string, origin: string) {
 }
 
 describe("invalid-output continuation — integration", () => {
+  const qwenEmptyThenTextResponse = [
+    `data: ${JSON.stringify({
+      id: "chatcmpl-97ebfe7f2a2dc884",
+      object: "chat.completion.chunk",
+      created: 1781617620,
+      model: "Qwen-3.6-27B",
+      choices: [
+        {
+          delta: {
+            content: "",
+            function_call: null,
+            role: "assistant",
+            tool_calls: null,
+          },
+          finish_reason: null,
+          index: 0,
+          logprobs: null,
+        },
+      ],
+    })}`,
+    `data: ${JSON.stringify({
+      id: "chatcmpl-97ebfe7f2a2dc884",
+      object: "chat.completion.chunk",
+      created: 1781617620,
+      model: "Qwen-3.6-27B",
+      choices: [
+        {
+          delta: {
+            content: "图片",
+            function_call: null,
+            role: null,
+            tool_calls: null,
+          },
+          finish_reason: null,
+          index: 0,
+          logprobs: null,
+          token_ids: null,
+        },
+      ],
+    })}`,
+    `data: ${JSON.stringify({
+      id: "chatcmpl-97ebfe7f2a2dc884",
+      object: "chat.completion.chunk",
+      choices: [{ finish_reason: "stop", index: 0 }],
+    })}`,
+    "data: [DONE]",
+  ]
+
+  test("qwen-style empty-leading text delta should not be treated as invalid output", async () => {
+    await using tmp = await tmpdir({ git: true })
+    const stub = startScriptedLLMServer([{ lines: qwenEmptyThenTextResponse }])
+    try {
+      await writeConfig(tmp.path, stub.origin)
+      await Instance.provide({
+        directory: tmp.path,
+        fn: () =>
+          run(
+            Effect.gen(function* () {
+              const sessions = yield* Session.Service
+              const prompt = yield* SessionPrompt.Service
+              const session = yield* sessions.create({ title: "qwen-empty-leading" })
+              const result = yield* prompt.prompt({
+                sessionID: session.id,
+                agent: "build",
+                parts: [{ type: "text", text: "测试空前导字符" }],
+              })
+              expect(stub.captures.length).toBe(1)
+              expect(result.info.role).toBe("assistant")
+              if (result.info.role === "assistant") expect(result.info.error).toBeUndefined()
+              expect(result.parts.some((part) => part.type === "text" && part.text === "图片")).toBe(true)
+            }),
+          ),
+      })
+    } finally {
+      await stub.stop()
+    }
+  })
+
   test("empty stop step is nudged, second call produces a non-empty final assistant", async () => {
     await using tmp = await tmpdir({ git: true })
     const stub = startScriptedLLMServer([{ lines: emptyStopResponse() }, { lines: textStopResponse("final answer") }])
