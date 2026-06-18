@@ -5,6 +5,7 @@ import { SYSTEM_SPAWNED_AGENT_TYPES } from "@/agent/config"
 import { Bus } from "@/bus"
 import { Metrics } from "@/metrics"
 import { Config } from "@/config"
+import { Flag } from "@/flag/flag"
 import { Permission } from "@/permission"
 import { Plugin } from "@/plugin"
 import { Snapshot } from "@/snapshot"
@@ -297,6 +298,18 @@ export const layer: Layer.Layer<
       })
 
       const handleEvent = Effect.fnUntraced(function* (value: StreamEvent) {
+        if (Flag.MIMOCODE_TRACE_LLM_STREAM) {
+          const deltaLen = value.type === "text-delta" ? value.text.length : undefined
+          const reasoningLen = value.type === "reasoning-delta" ? value.text.length : undefined
+          const hasUsage = value.type === "finish" && ("usage" in value || "totalUsage" in value)
+          slog.debug("processor stream event", {
+            type: value.type,
+            finish: value.type === "finish" ? value.finishReason : undefined,
+            deltaLen,
+            reasoningLen,
+            hasUsage,
+          })
+        }
         switch (value.type) {
           case "start":
             if (isMain) yield* status.set(ctx.sessionID, { type: "busy" })

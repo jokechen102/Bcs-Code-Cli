@@ -3,6 +3,7 @@ import { For, createMemo, createSignal, onCleanup, onMount, type JSX } from "sol
 import { useTheme, tint } from "@tui/context/theme"
 import * as Sound from "@tui/util/sound"
 import { go, logo } from "@/cli/logo"
+import { Flag } from "@/flag/flag"
 
 export type LogoShape = {
   left: string[]
