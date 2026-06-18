@@ -3,7 +3,7 @@ import { InstanceState } from "@/effect"
 
 import { AppFileSystem } from "@mimo-ai/shared/filesystem"
 import { Git } from "@/git"
-import { Effect, Layer, Context, Scope } from "effect"
+import { Cause, Effect, Layer, Context, Scope } from "effect"
 import * as Stream from "effect/Stream"
 import { formatPatch, structuredPatch } from "diff"
 import fuzzysort from "fuzzysort"
@@ -409,11 +409,19 @@ export const layer = Layer.effect(
       s.cache = next
     })
 
-    let cachedScan = yield* Effect.cached(scan().pipe(Effect.catchCause(() => Effect.void)))
+    const scanWithLogging = scan().pipe(
+      Effect.catchCause((cause) =>
+        Effect.sync(() => {
+          log.warn("scan failed", { cause: Cause.pretty(cause) })
+        }),
+      ),
+    )
+
+    let cachedScan = yield* Effect.cached(scanWithLogging)
 
     const ensure = Effect.fn("File.ensure")(function* () {
       yield* cachedScan
-      cachedScan = yield* Effect.cached(scan().pipe(Effect.catchCause(() => Effect.void)))
+      cachedScan = yield* Effect.cached(scanWithLogging)
     })
 
     const gitText = Effect.fnUntraced(function* (args: string[]) {

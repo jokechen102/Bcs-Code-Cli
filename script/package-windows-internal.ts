@@ -13,6 +13,9 @@ const staging = path.join(outRoot, packageName)
 const wezTermVersion = "20240203-110809-5046fc22"
 const wezTermZip = `WezTerm-windows-${wezTermVersion}.zip`
 const wezTermUrl = `https://github.com/wez/wezterm/releases/download/${wezTermVersion}/${wezTermZip}`
+const ripgrepVersion = "15.1.0"
+const ripgrepZip = `ripgrep-${ripgrepVersion}-x86_64-pc-windows-msvc.zip`
+const ripgrepUrl = `https://github.com/BurntSushi/ripgrep/releases/download/${ripgrepVersion}/${ripgrepZip}`
 const fullProviderId = process.env.BCS_CODE_FULL_PROVIDER_ID ?? process.env.BCS_CODE_PROVIDER_ID ?? "bcs-full"
 const smallProviderId = process.env.BCS_CODE_SMALL_PROVIDER_ID ?? "bcs-lite"
 const fullBaseURL = process.env.BCS_CODE_FULL_BASE_URL ?? process.env.BCS_CODE_BASE_URL ?? "http://100.89.126.33:8008/v1"
@@ -46,6 +49,21 @@ await fs.promises.copyFile(
 if (!(await Bun.file(path.join(staging, "payload", "wezterm", wezTermZip)).exists())) {
   await $`curl -L --fail --output ${path.join(staging, "payload", "wezterm", wezTermZip)} ${wezTermUrl}`
 }
+
+const ripgrepArchive = path.join(outRoot, ripgrepZip)
+if (!(await Bun.file(ripgrepArchive).exists())) {
+  await $`curl -L --fail --output ${ripgrepArchive} ${ripgrepUrl}`
+}
+const ripgrepExtract = path.join(outRoot, `ripgrep-${ripgrepVersion}-windows-x64`)
+await fs.promises.rm(ripgrepExtract, { recursive: true, force: true })
+await fs.promises.mkdir(ripgrepExtract, { recursive: true })
+await $`unzip -q -o ${ripgrepArchive} -d ${ripgrepExtract}`
+const ripgrepExe = path.join(ripgrepExtract, `ripgrep-${ripgrepVersion}-x86_64-pc-windows-msvc`, "rg.exe")
+if (!(await Bun.file(ripgrepExe).exists())) {
+  throw new Error(`ripgrep archive did not contain rg.exe: ${ripgrepExe}`)
+}
+await fs.promises.copyFile(ripgrepExe, path.join(staging, "payload", "bcs-code", "rg.exe"))
+await fs.promises.rm(ripgrepExtract, { recursive: true, force: true })
 
 await Bun.write(
   path.join(staging, "config", "install-settings.json"),

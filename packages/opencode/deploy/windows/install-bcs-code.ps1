@@ -90,7 +90,8 @@ function Install-WezTerm($PackageRoot) {
 }
 
 function Install-BcsCode($PackageRoot) {
-  $source = Join-Path $PackageRoot "payload\bcs-code\bcs-code.exe"
+  $sourceDir = Join-Path $PackageRoot "payload\bcs-code"
+  $source = Join-Path $sourceDir "bcs-code.exe"
   if (!(Test-Path $source)) {
     throw "Missing payload\bcs-code\bcs-code.exe."
   }
@@ -98,7 +99,7 @@ function Install-BcsCode($PackageRoot) {
   Write-Step "Installing bcs-code.exe"
   $bin = Join-Path $InstallRoot "bin"
   New-Item -ItemType Directory -Path $bin -Force | Out-Null
-  Copy-Item $source (Join-Path $bin "bcs-code.exe") -Force
+  Copy-Item (Join-Path $sourceDir "*") $bin -Force
   return Join-Path $bin "bcs-code.exe"
 }
 
@@ -290,7 +291,7 @@ return {
     '  Write-Warning `$message',
     '  Write-Warning "Check log: $launcherLog"',
     '  [void][Console]::ReadLine()',
-    '}',
+    '}'
   )
   $startCommands = if ($wezTermAvailable) {
     @(
