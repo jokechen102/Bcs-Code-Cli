@@ -37,6 +37,89 @@ const log = Log.create({ service: "llm" })
 export const OUTPUT_TOKEN_MAX = ProviderTransform.OUTPUT_TOKEN_MAX
 type Result = Awaited<ReturnType<typeof streamText>>
 
+function tracePromptAttachmentSummary(msgs: ModelMessage[]) {
+  let userMessages = 0
+  let userTextParts = 0
+  let userImageParts = 0
+  let userFileParts = 0
+  let userOtherParts = 0
+  const imageMedia: string[] = []
+  const fileMedia: string[] = []
+
+  for (const msg of msgs) {
+    if (msg.role !== "user" || !Array.isArray(msg.content)) continue
+    userMessages += 1
+    for (const part of msg.content) {
+      if (part.type === "text") {
+        if (part.text.trim()) userTextParts += 1
+        continue
+      }
+      if (part.type === "image") {
+        userImageParts += 1
+        const image = String(part.image)
+        imageMedia.push(image.startsWith("data:") ? image.slice(5, 64) : "[non-data-image]")
+        continue
+      }
+      if (part.type === "file") {
+        userFileParts += 1
+        fileMedia.push(part.mediaType || "[unknown]")
+        continue
+      }
+      userOtherParts += 1
+    }
+  }
+
+  return {
+    userMessages,
+    userTextParts,
+    userImageParts,
+    userFileParts,
+    userOtherParts,
+    imageMedia: imageMedia.slice(0, 6),
+    fileMedia: fileMedia.slice(0, 6),
+    imageRatio: userMessages > 0 ? Number((userImageParts / (userImageParts + userFileParts || 1)).toFixed(2)) : 0,
+  }
+}
+
+function contentToText(content: unknown): string {
+  if (typeof content === "string") return content
+  if (Array.isArray(content)) {
+    return content
+      .map((part) => {
+        if (typeof part === "string") return part
+        if (part && typeof part === "object" && "type" in part && part.type === "text") {
+          return typeof (part as { text?: unknown }).text === "string" ? (part as { text: string }).text : ""
+        }
+        return ""
+      })
+      .join("\n")
+  }
+  return ""
+}
+
+export function normalizeSystemMessages(messages: ModelMessage[]): ModelMessage[] {
+  const system: ModelMessage[] = []
+  const rest: ModelMessage[] = []
+  for (const message of messages) {
+    if (message.role === "system" || (message.role as string) === "developer") {
+      system.push(message)
+      continue
+    }
+    rest.push(message)
+  }
+
+  if (system.length === 0) return messages
+
+  const mergedContent = system
+    .map((message) => contentToText(message.content))
+    .map((content) => content.trim())
+    .filter(Boolean)
+    .join("\n")
+
+  const { role: _role, content: _content, ...metadata } = system[0] as Record<string, unknown>
+  return [{ role: "system", content: mergedContent, ...(metadata as Record<string, unknown>) }, ...rest]
+}
+
 /**
  * Match transient errors that the PERSISTENT_RETRY layer should retry.
  *
@@ -621,9 +704,41 @@ const live: Layer.Layer<
             {
               specificationVersion: "v3" as const,
               async transformParams(args) {
-                if (args.type === "stream") {
-                  // @ts-expect-error
-                  args.params.prompt = ProviderTransform.message(args.params.prompt, input.model, options)
+                if (args.type === "stream" || args.type === "generate") {
+                  const transformed = normalizeSystemMessages(
+                    ProviderTransform.message(args.params.prompt, input.model, options) as ModelMessage[],
+                  )
+                  if (Flag.MIMOCODE_TRACE_ATTACHMENTS) {
+                    const before = tracePromptAttachmentSummary(args.params.prompt as ModelMessage[])
+                    const after = tracePromptAttachmentSummary(transformed)
+                    log.debug("provider transform summary", {
+                      providerID: input.model.providerID,
+                      model: input.model.id,
+                      sessionID: input.sessionID,
+                      messageID: input.user.id,
+                      before,
+                      after,
+                      capability: {
+                        attachment: input.model.capabilities.attachment,
+                        imageInput: input.model.capabilities.input.image,
+                        outputText: input.model.capabilities.output.text,
+                      },
+                    })
+                    // @ts-expect-error
+                    args.params.prompt = transformed
+                  } else {
+                    // @ts-expect-error
+                    args.params.prompt = transformed
+                  }
+
+                  if (Flag.MIMOCODE_TRACE_ATTACHMENTS) {
+                    log.debug("provider transform output", {
+                      providerID: input.model.providerID,
+                      model: input.model.id,
+                      messageCount: args.params.prompt.length,
+                      userMessages: args.params.prompt.filter((msg) => msg.role === "user").length,
+                    })
+                  }
                 }
                 return args.params
               },
