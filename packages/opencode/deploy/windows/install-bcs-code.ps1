@@ -103,6 +103,18 @@ function Install-BcsCode($PackageRoot) {
   return Join-Path $bin "bcs-code.exe"
 }
 
+function Install-Skills($PackageRoot) {
+  $skillsSource = Join-Path $PackageRoot "payload\skills"
+  if (!(Test-Path $skillsSource)) {
+    return
+  }
+
+  Write-Step "Installing bundled skills"
+  $skillsTarget = Join-Path $env:USERPROFILE ".config\mimocode\skills"
+  New-Item -ItemType Directory -Path $skillsTarget -Force | Out-Null
+  Copy-Item (Join-Path $skillsSource "*") $skillsTarget -Recurse -Force
+}
+
 function Write-BcsConfig($Settings) {
   Write-Step "Writing BCS Code model configuration"
   $configDir = Join-Path $env:USERPROFILE ".config\mimocode"
@@ -354,6 +366,7 @@ try {
   Write-Warning "Continuing with BCS Code console launcher."
 }
 $bcsCodeExe = Install-BcsCode $packageRoot
+Install-Skills $packageRoot
 Write-BcsConfig $settings
 Write-Launchers $wezTermExe $bcsCodeExe $settings
 
@@ -363,4 +376,16 @@ if (!$SkipPath) {
 
 Write-Step "Verifying bcs-code version"
 & $bcsCodeExe --version
+foreach ($toolName in @("rg.exe", "officecli.exe")) {
+  $toolPath = Join-Path (Split-Path $bcsCodeExe -Parent) $toolName
+  if (!(Test-Path $toolPath)) {
+    throw "Missing bundled tool after install: $toolName"
+  }
+  Write-Step "Verifying $toolName"
+  & $toolPath --version
+}
+$officeCliSkill = Join-Path $env:USERPROFILE ".config\mimocode\skills\officecli\SKILL.md"
+if (!(Test-Path $officeCliSkill)) {
+  throw "Missing bundled skill after install: officecli"
+}
 Write-Step "Installation complete. Use the BCS Code desktop shortcut or run bcs-code from a new terminal."

@@ -16,6 +16,12 @@ const wezTermUrl = `https://github.com/wez/wezterm/releases/download/${wezTermVe
 const ripgrepVersion = "15.1.0"
 const ripgrepZip = `ripgrep-${ripgrepVersion}-x86_64-pc-windows-msvc.zip`
 const ripgrepUrl = `https://github.com/BurntSushi/ripgrep/releases/download/${ripgrepVersion}/${ripgrepZip}`
+const officeCliSource =
+  process.env.BCS_CODE_OFFICECLI_WINDOWS_X64 ??
+  path.join(process.env.HOME ?? "", "Downloads", "officecli-win-x64.exe")
+const officeCliSkillSource =
+  process.env.BCS_CODE_OFFICECLI_SKILL ??
+  path.join(process.env.HOME ?? "", "Downloads", "office-cli-skill.md")
 const fullProviderId = process.env.BCS_CODE_FULL_PROVIDER_ID ?? process.env.BCS_CODE_PROVIDER_ID ?? "bcs-full"
 const smallProviderId = process.env.BCS_CODE_SMALL_PROVIDER_ID ?? "bcs-lite"
 const fullBaseURL = process.env.BCS_CODE_FULL_BASE_URL ?? process.env.BCS_CODE_BASE_URL ?? "http://100.89.126.33:8008/v1"
@@ -31,6 +37,7 @@ await $`OPENCODE_VERSION=${version} bun run packages/opencode/script/build.ts --
 await fs.promises.rm(staging, { recursive: true, force: true })
 await fs.promises.mkdir(path.join(staging, "payload", "bcs-code"), { recursive: true })
 await fs.promises.mkdir(path.join(staging, "payload", "wezterm"), { recursive: true })
+await fs.promises.mkdir(path.join(staging, "payload", "skills", "officecli"), { recursive: true })
 await fs.promises.mkdir(path.join(staging, "config"), { recursive: true })
 
 await fs.promises.copyFile(
@@ -64,6 +71,19 @@ if (!(await Bun.file(ripgrepExe).exists())) {
 }
 await fs.promises.copyFile(ripgrepExe, path.join(staging, "payload", "bcs-code", "rg.exe"))
 await fs.promises.rm(ripgrepExtract, { recursive: true, force: true })
+
+if (!(await Bun.file(officeCliSource).exists())) {
+  throw new Error(
+    `Missing Windows officecli binary: ${officeCliSource}. Set BCS_CODE_OFFICECLI_WINDOWS_X64 to officecli-win-x64.exe.`,
+  )
+}
+await fs.promises.copyFile(officeCliSource, path.join(staging, "payload", "bcs-code", "officecli.exe"))
+if (!(await Bun.file(officeCliSkillSource).exists())) {
+  throw new Error(
+    `Missing officecli skill file: ${officeCliSkillSource}. Set BCS_CODE_OFFICECLI_SKILL to the officecli SKILL.md source.`,
+  )
+}
+await fs.promises.copyFile(officeCliSkillSource, path.join(staging, "payload", "skills", "officecli", "SKILL.md"))
 
 await Bun.write(
   path.join(staging, "config", "install-settings.json"),
@@ -121,6 +141,7 @@ await Bun.write(
     `Small provider id: ${smallProviderId}`,
     `Small model: ${smallProviderId}/${smallModel}`,
     `Small base URL: ${smallBaseURL}`,
+    `Bundled tools: rg.exe, officecli.exe`,
     "",
   ].join("\n"),
 )
