@@ -110,14 +110,14 @@ function Install-Skills($PackageRoot) {
   }
 
   Write-Step "Installing bundled skills"
-  $skillsTarget = Join-Path $env:USERPROFILE ".config\mimocode\skills"
+  $skillsTarget = Join-Path $env:USERPROFILE ".config\bcscode\skills"
   New-Item -ItemType Directory -Path $skillsTarget -Force | Out-Null
   Copy-Item (Join-Path $skillsSource "*") $skillsTarget -Recurse -Force
 }
 
 function Write-BcsConfig($Settings) {
   Write-Step "Writing BCS Code model configuration"
-  $configDir = Join-Path $env:USERPROFILE ".config\mimocode"
+  $configDir = Join-Path $env:USERPROFILE ".config\bcscode"
   New-Item -ItemType Directory -Path $configDir -Force | Out-Null
 
   function ConvertFrom-SecureStringPlainText($Secure) {
@@ -233,7 +233,7 @@ function Write-BcsConfig($Settings) {
     provider = $provider
   }
 
-  $config | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $configDir "mimocode.json") -Encoding UTF8
+  $config | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $configDir "bcscode.json") -Encoding UTF8
   [Environment]::SetEnvironmentVariable("BCS_CODE_DISABLE_MODELS_FETCH", "1", "User")
   [Environment]::SetEnvironmentVariable("MIMOCODE_DISABLE_MODELS_FETCH", "1", "User")
   $env:BCS_CODE_DISABLE_MODELS_FETCH = "1"
@@ -384,7 +384,7 @@ foreach ($toolName in @("rg.exe", "officecli.exe")) {
   Write-Step "Verifying $toolName"
   & $toolPath --version
 }
-$officeCliSkill = Join-Path $env:USERPROFILE ".config\mimocode\skills\officecli\SKILL.md"
+$officeCliSkill = Join-Path $env:USERPROFILE ".config\bcscode\skills\officecli\SKILL.md"
 if (!(Test-Path $officeCliSkill)) {
   throw "Missing bundled skill after install: officecli"
 }

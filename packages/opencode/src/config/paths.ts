@@ -25,17 +25,20 @@ export const files = Effect.fn("ConfigPaths.projectFiles")(function* (
 
 export const directories = Effect.fn("ConfigPaths.directories")(function* (directory: string, worktree?: string) {
   const afs = yield* AppFileSystem.Service
+  const legacyGlobalConfig = path.join(Global.Path.home, ".config", "mimocode")
+  const legacyGlobalConfigExists = yield* Effect.promise(() => Filesystem.exists(legacyGlobalConfig))
   return unique([
     Global.Path.config,
+    ...(legacyGlobalConfigExists ? [legacyGlobalConfig] : []),
     ...(!Flag.MIMOCODE_DISABLE_PROJECT_CONFIG
       ? yield* afs.up({
-          targets: [".bcs-code", ".mimocode"],
+          targets: [".mimocode", ".bcs-code", ".bcscode"],
           start: directory,
           stop: worktree,
         })
       : []),
     ...(yield* afs.up({
-      targets: [".bcs-code", ".mimocode"],
+      targets: [".mimocode", ".bcs-code", ".bcscode"],
       start: Global.Path.home,
       stop: Global.Path.home,
     })),

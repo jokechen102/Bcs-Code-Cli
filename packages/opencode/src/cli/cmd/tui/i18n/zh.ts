@@ -80,7 +80,7 @@ export const dict = {
   "tui.tips.cycle_sessions": "按 {highlight}Ctrl+X Right/Left{/highlight} 在父子会话之间切换",
   "tui.tips.config_files":
     "创建 {highlight}mimocode.json{/highlight} 用于服务端配置，{highlight}tui.json{/highlight} 用于 TUI 配置",
-  "tui.tips.global_config": "把 TUI 配置放在 {highlight}~/.config/mimocode/tui.json{/highlight} 作为全局配置",
+  "tui.tips.global_config": "把 TUI 配置放在 {highlight}~/.config/bcscode/tui.json{/highlight} 作为全局配置",
   "tui.tips.schema": "在配置中加入 {highlight}$schema{/highlight} 以便编辑器自动补全",
   "tui.tips.default_model": "在配置里设置 {highlight}model{/highlight} 来指定默认模型",
   "tui.tips.keybinds": "通过 {highlight}tui.json{/highlight} 的 {highlight}keybinds{/highlight} 部分覆盖任意按键",

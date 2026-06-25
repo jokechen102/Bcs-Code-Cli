@@ -103,7 +103,7 @@ Real-time streaming voice input powered by TenVAD and BCS Voice. Activate with `
 
 ## Configuration
 
-BCS Code currently keeps the upstream MiMoCode configuration paths: `.mimocode/mimocode.json` in the project directory, or `~/.config/mimocode/mimocode.json` globally. Key options include:
+BCS Code uses `bcscode.json` for configuration: `.bcscode/bcscode.json` in the project directory, or `~/.config/bcscode/bcscode.json` globally. Legacy `.mimocode/mimocode.json` and `bcs-code.json` files are still read for compatibility. Key options include:
 
 - Provider and model selection
 - Agent permissions and custom agents

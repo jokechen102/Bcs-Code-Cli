@@ -103,7 +103,7 @@ Compose 模式提供结构化的 specs-driven 开发流程，内置规划、执�
 
 ## 配置
 
-BCS Code 当前保留上游 MiMoCode 配置路径：项目目录下的 `.mimocode/mimocode.json`，或全局 `~/.config/mimocode/mimocode.json`。主要选项包括：
+BCS Code 使用 `bcscode.json` 作为配置文件：项目目录下的 `.bcscode/bcscode.json`，或全局 `~/.config/bcscode/bcscode.json`。旧的 `.mimocode/mimocode.json` 和 `bcs-code.json` 仍会兼容读取。主要选项包括：
 
 - Provider 和模型选择
 - Agent 权限和自定义 Agent

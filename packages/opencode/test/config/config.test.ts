@@ -55,6 +55,8 @@ const it = testEffect(layer)
 const load = () => Effect.runPromise(Config.Service.use((svc) => svc.get()).pipe(Effect.scoped, Effect.provide(layer)))
 const save = (config: Config.Info) =>
   Effect.runPromise(Config.Service.use((svc) => svc.update(config)).pipe(Effect.scoped, Effect.provide(layer)))
+const saveGlobal = (config: Config.Info) =>
+  Effect.runPromise(Config.Service.use((svc) => svc.updateGlobal(config)).pipe(Effect.scoped, Effect.provide(layer)))
 const clear = (wait = false) =>
   Effect.runPromise(Config.Service.use((svc) => svc.invalidate(wait)).pipe(Effect.scoped, Effect.provide(layer)))
 const listDirs = () =>
@@ -171,6 +173,48 @@ test("loads BCS Code project config file aliases", async () => {
   })
 })
 
+test("loads bcscode project config file aliases with highest priority", async () => {
+  await using tmp = await tmpdir({
+    init: async (dir) => {
+      await writeConfig(
+        dir,
+        {
+          $schema: "https://opencode.ai/config.json",
+          model: "test/legacy-mimocode",
+          username: "legacy-mimocode-user",
+        },
+        "mimocode.json",
+      )
+      await writeConfig(
+        dir,
+        {
+          $schema: "https://opencode.ai/config.json",
+          model: "test/legacy-bcs-code",
+          username: "legacy-bcs-code-user",
+        },
+        "bcs-code.json",
+      )
+      await writeConfig(
+        dir,
+        {
+          $schema: "https://opencode.ai/config.json",
+          model: "test/bcscode-json",
+          username: "bcscode-json-user",
+        },
+        "bcscode.json",
+      )
+    },
+  })
+  await Instance.provide({
+    directory: tmp.path,
+    fn: async () => {
+      const config = await load()
+      expect(config.model).toBe("test/bcscode-json")
+      expect(config.username).toBe("bcscode-json-user")
+    },
+  })
+})
+
 test("loads .bcs-code directory config aliases", async () => {
   await using tmp = await tmpdir({
     init: async (dir) => {
@@ -195,6 +239,52 @@ test("loads .bcs-code directory config aliases", async () => {
       expect(config.username).toBe("dot-bcs-code-user")
     },
   })
+})
+
+test("loads .bcscode directory config aliases", async () => {
+  await using tmp = await tmpdir({
+    init: async (dir) => {
+      const configDir = path.join(dir, ".bcscode")
+      await fs.mkdir(configDir, { recursive: true })
+      await writeConfig(
+        configDir,
+        {
+          $schema: "https://opencode.ai/config.json",
+          model: "test/dot-bcscode",
+          username: "dot-bcscode-user",
+        },
+        "bcscode.jsonc",
+      )
+    },
+  })
+  await Instance.provide({
+    directory: tmp.path,
+    fn: async () => {
+      const config = await load()
+      expect(config.model).toBe("test/dot-bcscode")
+      expect(config.username).toBe("dot-bcscode-user")
+    },
+  })
+})
+
+test("writes global config to bcscode.json by default", async () => {
+  await using tmp = await tmpdir()
+  const prev = Global.Path.config
+  ;(Global.Path as { config: string }).config = tmp.path
+  await clear(true)
+  try {
+    await saveGlobal({
+      $schema: "https://opencode.ai/config.json",
+      model: "test/global-bcscode",
+    } as Config.Info)
+    const file = path.join(tmp.path, "bcscode.json")
+    const config = JSON.parse(await Filesystem.readText(file))
+    expect(config.model).toBe("test/global-bcscode")
+    expect(await Filesystem.exists(path.join(tmp.path, "mimocode.json"))).toBe(false)
+  } finally {
+    ;(Global.Path as { config: string }).config = prev
+    await clear(true)
+  }
 })
 
 test("loads Claude Code MCP servers from home and project config", async () => {

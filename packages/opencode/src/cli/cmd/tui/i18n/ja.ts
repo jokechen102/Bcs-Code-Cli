@@ -93,7 +93,7 @@ export const dict = {
   "tui.tips.config_files":
     "サーバ設定は {highlight}mimocode.json{/highlight}、TUI 設定は {highlight}tui.json{/highlight} を作成します",
   "tui.tips.global_config":
-    "TUI 設定をグローバルに置くなら {highlight}~/.config/mimocode/tui.json{/highlight} を使います",
+    "TUI 設定をグローバルに置くなら {highlight}~/.config/bcscode/tui.json{/highlight} を使います",
   "tui.tips.schema": "設定に {highlight}$schema{/highlight} を加えるとエディタで自動補完されます",
   "tui.tips.default_model": "設定の {highlight}model{/highlight} でデフォルトモデルを指定します",
   "tui.tips.keybinds":

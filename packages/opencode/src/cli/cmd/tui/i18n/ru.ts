@@ -110,7 +110,7 @@ export const dict = {
   "tui.tips.config_files":
     "Создайте {highlight}mimocode.json{/highlight} для серверных настроек и {highlight}tui.json{/highlight} для настроек TUI",
   "tui.tips.global_config":
-    "Поместите настройки TUI в {highlight}~/.config/mimocode/tui.json{/highlight} как глобальные",
+    "Поместите настройки TUI в {highlight}~/.config/bcscode/tui.json{/highlight} как глобальные",
   "tui.tips.schema":
     "Добавьте {highlight}$schema{/highlight} в конфиг для автодополнения в редакторе",
   "tui.tips.default_model":
