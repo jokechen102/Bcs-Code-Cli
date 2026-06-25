@@ -212,7 +212,7 @@ export const McpAuthCommand = cmd({
 
         if (servers.length === 0) {
           prompts.log.warn("No OAuth-capable MCP servers configured")
-          prompts.log.info("Remote MCP servers support OAuth by default. Add a remote server in mimocode.json:")
+          prompts.log.info("Remote MCP servers support OAuth by default. Add a remote server in bcscode.json:")
           prompts.log.info(`
   "mcp": {
     "my-server": {
@@ -424,11 +424,25 @@ export const McpLogoutCommand = cmd({
 })
 
 async function resolveConfigPath(baseDir: string, global = false) {
-  // Check for existing config files (prefer .jsonc over .json, check .mimocode/ subdirectory too)
-  const candidates = [path.join(baseDir, "mimocode.json"), path.join(baseDir, "mimocode.jsonc")]
+  // Check for existing config files (prefer .jsonc over .json, check local config subdirectories too)
+  const candidates = [
+    path.join(baseDir, "bcscode.json"),
+    path.join(baseDir, "bcscode.jsonc"),
+    path.join(baseDir, "bcs-code.json"),
+    path.join(baseDir, "bcs-code.jsonc"),
+    path.join(baseDir, "mimocode.json"),
+    path.join(baseDir, "mimocode.jsonc"),
+  ]
 
   if (!global) {
-    candidates.push(path.join(baseDir, ".mimocode", "mimocode.json"), path.join(baseDir, ".mimocode", "mimocode.jsonc"))
+    candidates.push(
+      path.join(baseDir, ".bcscode", "bcscode.json"),
+      path.join(baseDir, ".bcscode", "bcscode.jsonc"),
+      path.join(baseDir, ".bcs-code", "bcs-code.json"),
+      path.join(baseDir, ".bcs-code", "bcs-code.jsonc"),
+      path.join(baseDir, ".mimocode", "mimocode.json"),
+      path.join(baseDir, ".mimocode", "mimocode.jsonc"),
+    )
   }
 
   for (const candidate of candidates) {
@@ -437,7 +451,7 @@ async function resolveConfigPath(baseDir: string, global = false) {
     }
   }
 
-  // Default to mimocode.json if none exist
+  // Default to bcscode.json if none exist
   return candidates[0]
 }
 

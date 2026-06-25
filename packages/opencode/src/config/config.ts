@@ -448,6 +448,10 @@ type State = {
   consoleState: ConsoleState
 }
 
+const CONFIG_NAMES = ["bcscode", "bcs-code", "mimocode"]
+const CONFIG_FILES = ["mimocode", "bcs-code", "bcscode"].flatMap((name) => [`${name}.json`, `${name}.jsonc`])
+const legacyGlobalConfigDir = () => path.join(Global.Path.home, ".config", "mimocode")
+
 export interface Interface {
   readonly get: () => Effect.Effect<Info>
   readonly getGlobal: () => Effect.Effect<Info>
@@ -462,13 +466,13 @@ export interface Interface {
 export class Service extends Context.Service<Service, Interface>()("@opencode/Config") {}
 
 function globalConfigFile() {
-  const candidates = ["bcs-code.jsonc", "bcs-code.json", "mimocode.jsonc", "mimocode.json", "config.json"].map((file) =>
-    path.join(Global.Path.config, file),
+  const candidates = ["bcscode.jsonc", "bcscode.json", "bcs-code.jsonc", "bcs-code.json", "mimocode.jsonc", "mimocode.json", "config.json"].map(
+    (file) => path.join(Global.Path.config, file),
   )
   for (const file of candidates) {
     if (existsSync(file)) return file
   }
-  return candidates[0]
+  return path.join(Global.Path.config, "bcscode.json")
 }
 
 function patchJsonc(input: string, patch: unknown, path: string[] = []): string {
@@ -491,6 +495,10 @@ function patchJsonc(input: string, patch: unknown, path: string[] = []): string 
 function writable(info: Info) {
   const { plugin_origins: _plugin_origins, mcp_origins: _mcp_origins, ...next } = info
   return next
+}
+
+function runtimeConfigContent() {
+  return process.env.BCS_CODE_CONFIG_CONTENT ?? process.env.MIMOCODE_CONFIG_CONTENT
 }
 
 export const ConfigDirectoryTypoError = NamedError.create(
@@ -552,13 +560,21 @@ export const layer = Layer.effect(
     })
 
     const loadGlobal = Effect.fnUntraced(function* () {
+      const legacyGlobalConfig = legacyGlobalConfigDir()
       let result: Info = pipe(
         {},
+        mergeDeep(yield* loadFile(path.join(legacyGlobalConfig, "config.json"))),
+        mergeDeep(yield* loadFile(path.join(legacyGlobalConfig, "mimocode.json"))),
+        mergeDeep(yield* loadFile(path.join(legacyGlobalConfig, "mimocode.jsonc"))),
+        mergeDeep(yield* loadFile(path.join(legacyGlobalConfig, "bcs-code.json"))),
+        mergeDeep(yield* loadFile(path.join(legacyGlobalConfig, "bcs-code.jsonc"))),
         mergeDeep(yield* loadFile(path.join(Global.Path.config, "config.json"))),
         mergeDeep(yield* loadFile(path.join(Global.Path.config, "mimocode.json"))),
         mergeDeep(yield* loadFile(path.join(Global.Path.config, "mimocode.jsonc"))),
         mergeDeep(yield* loadFile(path.join(Global.Path.config, "bcs-code.json"))),
         mergeDeep(yield* loadFile(path.join(Global.Path.config, "bcs-code.jsonc"))),
+        mergeDeep(yield* loadFile(path.join(Global.Path.config, "bcscode.json"))),
+        mergeDeep(yield* loadFile(path.join(Global.Path.config, "bcscode.jsonc"))),
       )
 
       const legacy = path.join(Global.Path.config, "config")
@@ -738,7 +754,7 @@ export const layer = Layer.effect(
         }
 
         if (!Flag.MIMOCODE_DISABLE_PROJECT_CONFIG) {
-          for (const file of yield* ConfigPaths.files(["mimocode", "bcs-code"], ctx.directory, ctx.worktree).pipe(
+          for (const file of yield* ConfigPaths.files(CONFIG_NAMES, ctx.directory, ctx.worktree).pipe(
             Effect.orDie,
           )) {
             yield* merge(file, yield* loadFile(file), "local")
@@ -763,8 +779,8 @@ export const layer = Layer.effect(
         }
 
         for (const dir of directories) {
-          if (dir.endsWith(".mimocode") || dir.endsWith(".bcs-code") || dir === Flag.MIMOCODE_CONFIG_DIR) {
-            for (const file of ["mimocode.json", "mimocode.jsonc", "bcs-code.json", "bcs-code.jsonc"]) {
+          if (dir.endsWith(".mimocode") || dir.endsWith(".bcs-code") || dir.endsWith(".bcscode") || dir === Flag.MIMOCODE_CONFIG_DIR) {
+            for (const file of CONFIG_FILES) {
               const source = path.join(dir, file)
               log.debug(`loading config from ${source}`)
               yield* merge(source, yield* loadFile(source))
@@ -808,9 +824,10 @@ export const layer = Layer.effect(
           yield* mergePluginOrigins(dir, list)
         }
 
-        if (Flag.MIMOCODE_CONFIG_CONTENT) {
+        const configContent = runtimeConfigContent()
+        if (configContent) {
           const source = process.env.BCS_CODE_CONFIG_CONTENT === undefined ? "MIMOCODE_CONFIG_CONTENT" : "BCS_CODE_CONFIG_CONTENT"
-          const next = yield* loadConfig(Flag.MIMOCODE_CONFIG_CONTENT, {
+          const next = yield* loadConfig(configContent, {
             dir: ctx.directory,
             source,
           })
@@ -861,7 +878,7 @@ export const layer = Layer.effect(
 
         const managedDir = ConfigManaged.managedConfigDir()
         if (existsSync(managedDir)) {
-          for (const file of ["mimocode.json", "mimocode.jsonc", "bcs-code.json", "bcs-code.jsonc"]) {
+          for (const file of CONFIG_FILES) {
             const source = path.join(managedDir, file)
             yield* merge(source, yield* loadFile(source), "global")
           }

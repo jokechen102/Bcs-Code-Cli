@@ -4,6 +4,7 @@ import os from "os"
 import { Context, Effect, Layer } from "effect"
 
 const APP = "mimocode"
+const CONFIG_APP = "bcscode"
 
 export type ResolvedPaths = {
   mode: "mimocode_home" | "xdg"
@@ -45,7 +46,7 @@ export function resolveMimocodeHome(env: NodeJS.ProcessEnv = process.env): Resol
     mode: "xdg",
     data: path.join(xdgData!, APP),
     cache: path.join(xdgCache!, APP),
-    config: path.join(xdgConfig!, APP),
+    config: path.join(xdgConfig!, CONFIG_APP),
     state: path.join(xdgState!, APP),
   }
 }

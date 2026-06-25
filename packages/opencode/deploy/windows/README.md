@@ -10,7 +10,7 @@ The generated package installs:
   configs are not modified. If WezTerm installation fails, the installer warns
   and continues with a direct BCS Code console launcher.
 - `bcs-code.exe` under `%LOCALAPPDATA%\Programs\BCS Code\bin`.
-- Global BCS Code provider config under `%USERPROFILE%\.config\mimocode\mimocode.json`.
+- Global BCS Code provider config under `%USERPROFILE%\.config\bcscode\bcscode.json`.
 - User environment variable `BCS_CODE_DISABLE_MODELS_FETCH=1` with the legacy
   compatibility alias also set.
 - Desktop and Start Menu launchers that open BCS Code inside WezTerm when

@@ -136,8 +136,8 @@ describe("MIMOCODE_HOME end-to-end", () => {
     })
     expect(result.ok).toBe(true)
     if (!result.ok) return
-    // Paths should reflect XDG layout (ends with "/mimocode"), not MIMOCODE_HOME layout
-    expect(result.paths.config).toBe(path.join(tmp.path, "config", "mimocode"))
+    // Config uses the BCS-branded XDG app path; data stays on the legacy app path.
+    expect(result.paths.config).toBe(path.join(tmp.path, "config", "bcscode"))
     expect(result.paths.data).toBe(path.join(tmp.path, "data", "mimocode"))
   })
 })

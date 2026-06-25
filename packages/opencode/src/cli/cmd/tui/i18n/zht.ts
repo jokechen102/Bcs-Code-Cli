@@ -80,7 +80,7 @@ export const dict = {
   "tui.tips.cycle_sessions": "按 {highlight}Ctrl+X Right/Left{/highlight} 在父子工作階段之間切換",
   "tui.tips.config_files":
     "建立 {highlight}mimocode.json{/highlight} 用於伺服器端設定，{highlight}tui.json{/highlight} 用於 TUI 設定",
-  "tui.tips.global_config": "把 TUI 設定放在 {highlight}~/.config/mimocode/tui.json{/highlight} 作為全域設定",
+  "tui.tips.global_config": "把 TUI 設定放在 {highlight}~/.config/bcscode/tui.json{/highlight} 作為全域設定",
   "tui.tips.schema": "在設定中加入 {highlight}$schema{/highlight} 以便編輯器自動完成",
   "tui.tips.default_model": "在設定中設定 {highlight}model{/highlight} 來指定預設模型",
   "tui.tips.keybinds": "透過 {highlight}tui.json{/highlight} 的 {highlight}keybinds{/highlight} 區段覆寫任意按鍵",

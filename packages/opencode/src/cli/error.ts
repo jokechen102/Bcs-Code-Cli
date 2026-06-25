@@ -33,7 +33,7 @@ export function FormatError(input: unknown) {
       `Model not found: ${data?.providerID}/${data?.modelID}`,
       ...(suggestions.length ? ["Did you mean: " + suggestions.join(", ")] : []),
       `Try: \`bcs-code models\` to list available models`,
-      `Or check your config (mimocode.json) provider/model names`,
+      `Or check your config (bcscode.json) provider/model names`,
     ].join("\n")
   }
 
