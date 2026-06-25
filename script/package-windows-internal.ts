@@ -10,6 +10,8 @@ const version = process.env.OPENCODE_VERSION ?? Script.version
 const packageName = `bcs-code-windows-amd64-${version}`
 const outRoot = path.join(root, "dist", "internal")
 const staging = path.join(outRoot, packageName)
+const buildArgs = ["--target=windows-x64", "--skip-install"]
+if (process.env.BCS_CODE_EMBED_WEB_UI !== "1") buildArgs.push("--skip-embed-web-ui")
 const wezTermVersion = "20240203-110809-5046fc22"
 const wezTermZip = `WezTerm-windows-${wezTermVersion}.zip`
 const wezTermUrl = `https://github.com/wez/wezterm/releases/download/${wezTermVersion}/${wezTermZip}`
@@ -26,7 +28,7 @@ const smallModel = process.env.BCS_CODE_SMALL_MODEL ?? "Qwen-3.6-27B"
 
 process.chdir(root)
 
-await $`OPENCODE_VERSION=${version} bun run packages/opencode/script/build.ts --target=windows-x64`
+await $`OPENCODE_VERSION=${version} bun run packages/opencode/script/build.ts ${buildArgs}`
 
 await fs.promises.rm(staging, { recursive: true, force: true })
 await fs.promises.mkdir(path.join(staging, "payload", "bcs-code"), { recursive: true })
