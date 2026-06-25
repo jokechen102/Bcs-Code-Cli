@@ -12,6 +12,7 @@ import { Bus } from "@/bus"
 import { BusEvent } from "@/bus/bus-event"
 import { SessionID } from "./schema"
 import { MessageV2 } from "./message-v2"
+import { normalizeSystemMessages } from "./normalize-system-messages"
 
 /**
  * Per-session stop-condition goal. `/goal`: once a goal
@@ -168,11 +169,11 @@ export const layer = Layer.effect(
         typeof value === "string" && value.length > 500
           ? `«${value.length} chars: ${value.slice(0, 200)}…»`
           : value
-      const fullMessages = [
+      const fullMessages = normalizeSystemMessages([
         ...(isOpenaiOauth ? [] : [{ role: "system", content: JUDGE_SYSTEM }]),
         ...conversation,
         { role: "user", content: judgeUser(input.condition) },
-      ]
+      ] as ModelMessage[])
       yield* elog.debug("goal judge transcript", {
         condition: input.condition,
         messageCount: fullMessages.length,
@@ -186,14 +187,14 @@ export const layer = Layer.effect(
           metadata: { userId: cfg.username ?? "unknown" },
         },
         temperature: 0,
-        messages: [
+        messages: normalizeSystemMessages([
           ...(isOpenaiOauth ? [] : [{ role: "system", content: JUDGE_SYSTEM } satisfies ModelMessage]),
           ...conversation,
           {
             role: "user",
             content: judgeUser(input.condition),
           } satisfies ModelMessage,
-        ],
+        ]),
         model: language,
         schema: Verdict,
       } satisfies Parameters<typeof generateObject>[0]

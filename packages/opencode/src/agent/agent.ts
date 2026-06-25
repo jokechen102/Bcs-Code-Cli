@@ -25,6 +25,7 @@ import { Effect, Context, Layer } from "effect"
 import { InstanceState } from "@/effect"
 import * as Option from "effect/Option"
 import * as OtelTracer from "@effect/opentelemetry/Tracer"
+import { normalizeSystemMessages } from "@/session/normalize-system-messages"
 
 export const Info = z
   .object({
@@ -498,7 +499,7 @@ export const layer = Layer.effect(
             },
           },
           temperature: 0.3,
-          messages: [
+          messages: normalizeSystemMessages([
             ...(isOpenaiOauth
               ? []
               : system.map(
@@ -511,7 +512,7 @@ export const layer = Layer.effect(
               role: "user",
               content: `Create an agent configuration based on this request: "${input.description}".\n\nIMPORTANT: The following identifiers already exist and must NOT be used: ${existing.map((i) => i.name).join(", ")}\n  Return ONLY the JSON object, no other text, do not wrap in backticks`,
             },
-          ],
+          ]),
           model: language,
           schema: z.object({
             identifier: z.string(),
